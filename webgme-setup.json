@@ -13,10 +13,16 @@
       "EllipseDecorator": {
         "src": "src/decorators/EllipseDecorator"
       }
+    },
+    "seeds": {
+      "Example": {
+        "src": "src/seeds/Example"
+      }
     }
   },
   "dependencies": {
     "visualizers": {},
-    "decorators": {}
+    "decorators": {},
+    "seeds": {}
   }
 }
