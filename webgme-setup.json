@@ -1,0 +1,22 @@
+{
+  "components": {
+    "visualizers": {
+      "EasyDAG": {
+        "src": "panels/EasyDAG/EasyDAGPanel",
+        "title": "EasyDAG",
+        "panel": "src/visualizers/panels/EasyDAG",
+        "secondary": false,
+        "widget": "src/visualizers/widgets/EasyDAG"
+      }
+    },
+    "decorators": {
+      "EllipseDecorator": {
+        "src": "src/decorators/EllipseDecorator"
+      }
+    }
+  },
+  "dependencies": {
+    "visualizers": {},
+    "decorators": {}
+  }
+}

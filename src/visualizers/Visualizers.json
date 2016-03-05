@@ -1,0 +1,8 @@
+[
+  {
+    "id": "EasyDAG",
+    "title": "EasyDAG",
+    "panel": "panels/EasyDAG/EasyDAGPanel",
+    "DEBUG_ONLY": false
+  }
+]
