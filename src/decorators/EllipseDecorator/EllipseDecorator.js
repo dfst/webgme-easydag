@@ -2,18 +2,14 @@
 /*jshint browser: true, camelcase: false*/
 
 /**
- * @author rkereskenyi / https://github.com/rkereskenyi
+ * @author brollb / https://github.com/brollb
  */
 
 define([
     'js/Decorators/DecoratorBase',
-    './DiagramDesigner/EllipseDecorator.DiagramDesignerWidget',
-    './PartBrowser/EllipseDecorator.PartBrowserWidget',
     './EasyDAG/EllipseDecorator.EasyDAGWidget'
 ], function (
     DecoratorBase,
-    EllipseDecoratorDiagramDesignerWidget,
-    EllipseDecoratorPartBrowserWidget,
     EllipseDecoratorEasyDAGWidget
 ) {
 
@@ -39,8 +35,6 @@ define([
 
     EllipseDecorator.prototype.initializeSupportedWidgetMap = function () {
         this.supportedWidgetMap = {
-            DiagramDesigner: EllipseDecoratorDiagramDesignerWidget,
-            PartBrowser: EllipseDecoratorPartBrowserWidget,
             EasyDAG: EllipseDecoratorEasyDAGWidget
         };
     };

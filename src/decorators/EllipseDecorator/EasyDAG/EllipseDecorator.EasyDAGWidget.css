@@ -1,5 +1,5 @@
 /**
- * @author rkereskenyi / https://github.com/rkereskenyi
+ * @author brollb / https://github.com/brollb
  */
 .ellipse-decorator {
   min-width: 65px;
@@ -8,10 +8,13 @@
   background-color: #dedede;
   padding: 3px;
   text-align: center; }
+  .ellipse-decorator .attr-title {
+      font-style: italic;
+  }
   .ellipse-decorator .name {
     margin-top: 10px;
     white-space: nowrap;
-    font-size: 11px;
+    font-size: 16px;
     font-weight: bold;
     font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
     text-align: center; }
