@@ -45,7 +45,7 @@ define([
                     this.createConnectedNode(item.id, pair.conn.id, pair.node.id);
                 }
             };
-        } else {
+        } else if (successor) {
             this.createConnectedNode(item.id, successor.conn.id, successor.node.id);
         }
     };

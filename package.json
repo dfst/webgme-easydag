@@ -9,8 +9,9 @@
     "webgme": "^1.1.0"
   },
   "devDependencies": {
+    "chai": "^3.0.0",
     "mocha": "^2.2.5",
-    "rimraf": "^2.4.0",
-    "chai": "^3.0.0"
+    "requirejs": "^2.2.0",
+    "rimraf": "^2.4.0"
   }
 }

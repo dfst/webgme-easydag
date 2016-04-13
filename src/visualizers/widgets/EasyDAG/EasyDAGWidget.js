@@ -12,9 +12,11 @@ define([
     './EasyDAGWidget.Actions',
     './EasyDAGWidget.Refresh',
     './EasyDAGWidget.Initial',
+    './KeyBindings',
     './DAGItem',
     './Connection',
     './SelectionManager',
+    'js/Utils/ComponentSettings',
     'd3',
     'css!./styles/EasyDAGWidget.css',
     'css!./lib/opentip.css'
@@ -25,22 +27,26 @@ define([
     EasyDAGWidgetActions,
     EasyDAGWidgetRefresher,
     EasyDAGWidgetInitial,
+    KeyBindings,
     DAGItem,
     Connection,
-    SelectionManager
+    SelectionManager,
+    ComponentSettings
 ) {
     'use strict';
 
     var EasyDAGWidget,
         WIDGET_CLASS = 'easy-dag',
-        MARGIN = 20,
-        DURATION = 750,
-        i = 0;
+        DEFAULT_SETTINGS = {
+            hotkeys: 'none'
+        };
 
     EasyDAGWidget = function (logger, container) {
         this._logger = logger.fork('Widget');
 
         this.$el = container;
+        this._config = DEFAULT_SETTINGS;
+        ComponentSettings.resolveWithWebGMEGlobal(this._config, this.getComponentId());
 
         // Items
         this.items = {};
@@ -56,6 +62,7 @@ define([
 
         EasyDAGWidgetInitial.call(this);
         EasyDAGWidgetItems.call(this);
+        KeyBindings.call(this);
 
         // Selection manager
         this.selectionManager = new SelectionManager(this);
@@ -69,7 +76,7 @@ define([
         //set Widget title
         this.$el.addClass(WIDGET_CLASS);
         this._$svg = d3.select(this.$el[0])
-            .append('svg')
+            .append('svg');
 
         this.$svg = this._$svg.append('g');
         this.$connContainer = this.$svg.append('g')
@@ -90,6 +97,10 @@ define([
 
         // Setup DAGItem callbacks
         this.resizeDAG();
+    };
+
+    EasyDAGWidget.prototype.getComponentId = function () {
+        return 'EasyDAG';
     };
 
     EasyDAGWidget.prototype.initSvgDefs = function () {
@@ -263,11 +274,17 @@ define([
     };
 
     EasyDAGWidget.prototype.onActivate = function () {
+        // Set focus
+        this.$el.focus();
         this.active = true;
+        this.enableKeyBindings();
         //this.refreshScreen();
     };
 
     EasyDAGWidget.prototype.onDeactivate = function () {
+        // Set focus
+        this.$el.blur();
+        this.disableKeyBindings();
         this.active = false;
     };
 
@@ -277,7 +294,8 @@ define([
         EasyDAGWidgetItems.prototype,
         EasyDAGWidgetActions.prototype,
         EasyDAGWidgetRefresher.prototype,
-        EasyDAGWidgetInitial.prototype
+        EasyDAGWidgetInitial.prototype,
+        KeyBindings.prototype
     );
 
     EasyDAGWidget.prototype.refreshUI = 
