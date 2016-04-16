@@ -46,16 +46,18 @@ define([
     // Highlight support /////////////////////////////////
 
     EasyDAGDecoratorBase.prototype.highlight = function(color) {
-        if (this.$body && !this.$shape) {
-            // copy the $body
-            var body = this.$body[0][0].cloneNode();  // retrieve the node
-            this.$shape = body;
-            this.$highlight
-                // change the color
-                .attr('fill', color || '#ff0000')
+        if (this.$body) {
+            if (!this.$shape) {
+                // copy the $body
+                var body = this.$body[0][0].cloneNode();  // retrieve the node
+                this.$shape = body;
+                this.$highlight[0][0].appendChild(this.$shape);  // FIXME: This is ugly
+            }
 
             this.$shape.setAttribute('filter', 'url(#highlight)');
-            this.$highlight[0][0].appendChild(this.$shape);  // FIXME: This is ugly
+            this.$highlight
+                // change the color
+                .attr('fill', color || '#ff0000');
         } else {
             this.logger.info('highlighting is not supported');
         }
@@ -63,7 +65,7 @@ define([
 
     EasyDAGDecoratorBase.prototype.unHighlight = function() {
         if (this.$shape) {
-            this.$shape.attr('filter', null);
+            this.$shape.removeAttribute('filter');
         }
     };
 
@@ -79,7 +81,9 @@ define([
     };
 
     EasyDAGDecoratorBase.prototype.disableTooltip = function() {
-        this.$tooltip.deactivate();
+        if (this.$tooltip) {
+            this.$tooltip.deactivate();
+        }
     };
 
     return EasyDAGDecoratorBase;

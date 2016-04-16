@@ -120,6 +120,11 @@ define([
         this.decorator.enableTooltip(message, 'standard');
     };
 
+    // Selection using keybindings
+    DAGItem.prototype.highlight = function() {
+        this.decorator.highlight('#8888ff');
+    };
+
     DAGItem.prototype.clear = function() {
         this.decorator.unHighlight();
         this.decorator.disableTooltip();
