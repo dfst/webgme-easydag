@@ -34,6 +34,26 @@ define([
 
         // Editing attributes
         this._widget.saveAttributeForNode = this._saveAttributeForNode.bind(this);
+
+        // Additional Helpers
+        this._widget.undo = this._undo.bind(this);
+        this._widget.redo = this._redo.bind(this);
+    };
+
+    EasyDAGControlEventHandlers.prototype._undo = function() {
+        this._client.undo(this._client.getActiveBranchName(), function(err) {
+            if (err) {
+                this._logger.error('Could not redo!: ', err);
+            }
+        });
+    };
+
+    EasyDAGControlEventHandlers.prototype._redo = function() {
+        this._client.redo(this._client.getActiveBranchName(), function(err) {
+            if (err) {
+                this._logger.error('Could not redo!: ', err);
+            }
+        });
     };
 
     EasyDAGControlEventHandlers.prototype._getEnumValues = function(nodeId, attr) {

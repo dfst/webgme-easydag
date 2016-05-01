@@ -202,5 +202,5 @@ describe('State machine', function() {
         assert(n1 !== n2, 'nodes are the same');
         assert.equal(n2.isTerminal, true);
     });
-    
+
 });

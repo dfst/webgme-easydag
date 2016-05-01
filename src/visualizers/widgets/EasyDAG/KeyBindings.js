@@ -5,6 +5,7 @@ define([
 ) {
     'use strict';
 
+    var REGEX = /[a-zA-Z0-9]/;
     var KeyBindings = function() {
         this.HOTKEYS = {
             vimish: vim
@@ -32,7 +33,11 @@ define([
         // load key mapping from component settings
         var Hotkeys = this.HOTKEYS[this._config.hotkeys];
         if (Hotkeys) {
-            this.hotkeys = new Hotkeys(this._logger, this.items, this.connections);
+            this.hotkeys = new Hotkeys({
+                logger: this._logger,
+                widget: this,
+                items: this.items,
+                connections: this.connections});
 
             this.hotkeys.createAddDialog = this.onAddButtonClicked.bind(this);
             this.hotkeys.removeSubtree = this.removeItem.bind(this);
@@ -52,7 +57,9 @@ define([
             (event.ctrlKey ? 'ctrl ' : '') +
             (event.shiftKey ? key : key.toLowerCase());
 
-        this.hotkeys.handleKey(key);
+        if (REGEX.test(key)) {
+            this.hotkeys.handleKey(key);
+        }
     };
 
     return KeyBindings;
