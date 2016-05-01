@@ -6,11 +6,13 @@ define([
     'use strict';
     var LATERAL_MARGIN = 50,
         NUMBER_REGEX = /[0-9]/;
-    var vim = function(logger, items, connections) {
+
+    var vim = function(opts) {
         // TODO: Add the window info
-        this._logger = logger.fork('vimish');
-        this._items = items;
-        this._conns = connections;
+        this._logger = opts.logger.fork('vimish');
+        this._items = opts.items;
+        this._conns = opts.connections;
+        this._widget = opts.widget;
 
         this._selected = null;
         this._prev = null;
@@ -24,8 +26,9 @@ define([
             'esc': this.deselect.bind(this),
 
             'a': this.addSuccessor.bind(this),
-            'd': this.remove.bind(this)
-            // TODO: add undo/redo
+            'd': this.remove.bind(this),
+            'u': this.undo.bind(this),
+            'R': this.redo.bind(this)
         };
 
         this.endCmds = {  // by end key
@@ -37,7 +40,9 @@ define([
                 ['d', 'd']//,
                 //['d', '%number', '%dir']
             ],
-            'exit': [['esc']]
+            'exit': [['esc']],
+            'undo': [['u']],
+            'redo': [['R']]
         };
 
         // Add movement keys
@@ -62,7 +67,7 @@ define([
         });
 
         var paths = Object.keys(keyMap).map(id => keyMap[id])
-            .reduce((l1, l2) => l1.concat(l2))
+            .reduce((l1, l2) => l1.concat(l2));
         this.validCommands = new StateMachine(paths);
         this.state = this.validCommands.initial();
     };
@@ -302,8 +307,14 @@ define([
         }
     };
 
-////////////////// compositional commands //////////////////
+////////////////// undo/redo //////////////////
+    vim.prototype.undo = function() {
+        this._widget.undo();
+    };
 
+    vim.prototype.redo = function() {
+        this._widget.redo();
+    };
 // TODO
 
     return vim;
