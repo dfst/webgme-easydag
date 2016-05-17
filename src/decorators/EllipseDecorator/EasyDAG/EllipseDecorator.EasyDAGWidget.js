@@ -21,6 +21,7 @@ define([
 
     var EllipseDecorator,
         DECORATOR_ID = 'EllipseDecorator',
+        NAME_MARGIN = 15;
 
     EllipseDecorator = function (options) {
         var opts = _.extend({}, options);
@@ -28,6 +29,7 @@ define([
         this._node = options.node;
         this._attrToDisplayName = {};
         this.attributeFields = {};
+        this.nameWidth = null;
         this.setAttributes();
 
         this.color = this.color || '#2196f3';
@@ -41,7 +43,7 @@ define([
 
         if (!this.dense) {  // condensed size
             this.dense = {};
-            this.dense.width = this.size.width;
+            this.dense.width = this.size.width;  // Not initialized
             this.dense.height = this.size.height;
         }
 
@@ -75,8 +77,9 @@ define([
 
     EllipseDecorator.prototype.expand = function() {
         var height,
-            rx = this.size.width/2,
-            ry = this.size.height/2,
+            width,
+            rx,
+            ry,
             attrNames = Object.keys(this._attributes),
             displayName,
             path,
@@ -94,12 +97,15 @@ define([
 
             // Get the height from the number of attributes
             height = y + this.dense.height + textHeight*attrNames.length;
+            width = Math.max(this.nameWidth + 2 * NAME_MARGIN, this.size.width);
+            rx = width/2;
+            ry = this.size.height/2;
 
             path = [
                 `M${-rx},0`,
-                `l ${this.size.width} 0`,
+                `l ${width} 0`,
                 `l 0 ${height}`,
-                `l -${this.size.width} 0`,
+                `l -${width} 0`,
                 `l 0 -${height}`
             ].join(' ');
 
@@ -140,7 +146,7 @@ define([
 
             // Update width, height
             this.height = height;
-            this.width = this.size.width;
+            this.width = width;
             this.expanded = true;
             this.$el
                 .attr('transform', `translate(${this.width/2}, 0)`);
@@ -151,13 +157,18 @@ define([
 
     EllipseDecorator.prototype.condense = function() {
         var path,
-            rx = this.dense.width/2,
-            ry = this.dense.height/2;
+            width,
+            rx,
+            ry;
+
+        width = Math.max(this.nameWidth + 2 * NAME_MARGIN, this.dense.width);
+        rx = width/2;
+        ry = this.dense.height/2;
 
         path = [
             `M${-rx},0`,
-            `a${rx},${ry} 0 1,0 ${this.dense.width},0`,
-            `a${rx},${ry} 0 1,0 -${this.dense.width},0`
+            `a${rx},${ry} 0 1,0 ${width},0`,
+            `a${rx},${ry} 0 1,0 -${width},0`
         ].join(' ');
 
         this.$body
@@ -169,7 +180,7 @@ define([
             .attr('fill', '#222222');
 
         this.height = this.dense.height;
-        this.width = this.dense.width;
+        this.width = width;
 
         this.$name.attr('y', '0');
 
@@ -190,7 +201,11 @@ define([
     EllipseDecorator.prototype.setAttributes = function() {
         var attrNames = Object.keys(this._node.attributes),
             name;
-        this.name = this._node.baseName;  // Using the base node name for title
+
+        if (this.name !== this._node.baseName) {
+            this.name = this._node.baseName;  // Using the base node name for title
+            this.nameWidth = null;
+        }
 
         this._attributes = {};
         for (var i = attrNames.length; i--;) {
@@ -275,6 +290,19 @@ define([
         }
     };
 
+    // Reads the name width if it is currently unknown
+    EllipseDecorator.prototype.updateDenseWidth = function() {
+        if (!this.nameWidth) {
+            this.nameWidth = this.$name.node().getBoundingClientRect().width;
+
+            // Update the condensed width
+            if (this.nameWidth > this.dense.width && !this.expanded) {
+                // Fix the condensed size
+                this.condense();
+            }
+        }
+    };
+
     EllipseDecorator.prototype.render = function() {
         this.$body
             .transition()
@@ -284,6 +312,8 @@ define([
         this.$name
             .attr('text-anchor', 'middle')
             .text(this.name);
+
+        this.updateDenseWidth();
     };
 
     EllipseDecorator.prototype.update = function(node) {
