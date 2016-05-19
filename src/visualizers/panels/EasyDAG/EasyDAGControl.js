@@ -20,8 +20,7 @@ define([
 
     'use strict';
 
-    var DEFAULT_DECORATOR = 'EllipseDecorator',
-        WIDGET_NAME = 'EasyDAG';
+    var WIDGET_NAME = 'EasyDAG';
     var EasyDAGControl = function (options) {
 
         this._logger = options.logger.fork('Control');
@@ -41,9 +40,8 @@ define([
     };
 
     /* * * * * * * * Visualizer content update callbacks * * * * * * * */
-    // One major concept here is with managing the territory. The territory
-    // defines the parts of the project that the visualizer is interested in
-    // (this allows the browser to then only load those relevant parts).
+    EasyDAGControl.prototype.DEFAULT_DECORATOR = 'EllipseDecorator';
+    EasyDAGControl.prototype.TERRITORY_RULE = {children: 0};
     EasyDAGControl.prototype.selectedObjectChanged = function (nodeId) {
         var desc = this._getObjectDescriptor(nodeId),
             self = this;
@@ -61,7 +59,7 @@ define([
 
         if (self._currentNodeId || self._currentNodeId === CONSTANTS.PROJECT_ROOT_ID) {
             // Put new node's info into territory rules
-            self._selfPatterns[nodeId] = {children: 0};  // Territory "rule"
+            self._selfPatterns[nodeId] = this.TERRITORY_RULE;  // Territory "rule"
 
             self._widget.setTitle(desc.name.toUpperCase());
 
@@ -80,7 +78,7 @@ define([
             // Update the territory
             self._client.updateTerritory(self._territoryId, self._selfPatterns);
 
-            self._selfPatterns[nodeId] = {children: 1};
+            self._selfPatterns[nodeId] = this.TERRITORY_RULE;
             self._client.updateTerritory(self._territoryId, self._selfPatterns);
         }
     };
@@ -93,7 +91,7 @@ define([
         decorator = nodeObj.getRegistry(REGISTRY_KEYS.DECORATOR);
         decoratorClass = decoratorManager.getDecoratorForWidget(decorator, WIDGET_NAME);
         if (!decoratorClass) {
-            decoratorClass = decoratorManager.getDecoratorForWidget(DEFAULT_DECORATOR, WIDGET_NAME);
+            decoratorClass = decoratorManager.getDecoratorForWidget(this.DEFAULT_DECORATOR, WIDGET_NAME);
         }
         return decoratorClass;
     };
