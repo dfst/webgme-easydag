@@ -32,7 +32,7 @@ define([
         this.nameWidth = null;
         this.setAttributes();
 
-        this.color = this.color || '#2196f3';
+        this.color = options.color || this.color || '#2196f3';
         // Set width, height values
         if (!this.size) {
             this.size = {
