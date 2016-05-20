@@ -42,12 +42,16 @@ define([
             dialog.show(title, successorPairs);
             dialog.onSelect = pair => {
                 if (pair) {
-                    this.createConnectedNode(item.id, pair.conn.id, pair.node.id);
+                    this.onAddItemSelected(item, pair);
                 }
             };
         } else if (successor) {
-            this.createConnectedNode(item.id, successor.conn.id, successor.node.id);
+            this.onAddItemSelected(item, successor);
         }
+    };
+
+    EasyDAGWidgetActions.prototype.onAddItemSelected = function(item, selected) {
+        this.createConnectedNode(item.id, selected.conn.id, selected.node.id);
     };
 
     EasyDAGWidgetActions.prototype._getAddSuccessorTitle = function(item) {
