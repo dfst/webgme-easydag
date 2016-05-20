@@ -5,7 +5,7 @@
     "test": "node ./node_modules/mocha/bin/mocha --recursive test"
   },
   "version": "1.0.0",
-  "dependencies": {
+  "peerDependencies": {
     "webgme": "^2.0.0"
   },
   "devDependencies": {
