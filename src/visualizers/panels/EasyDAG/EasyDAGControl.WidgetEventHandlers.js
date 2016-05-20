@@ -162,6 +162,13 @@ define([
             .map(nodeId => this._getObjectDescriptor(nodeId));
     };
 
+    EasyDAGControlEventHandlers.prototype._getAllValidChildren = function(nodeId) {
+        return this._client.getChildrenMeta(nodeId).items
+            // Get all descendents
+            .map(info => this._getAllDescendentIds(info.id))
+            .reduce((prev, curr) => prev.concat(curr));
+    };
+
     // Get the valid nodes that can follow the given node
     EasyDAGControlEventHandlers.prototype._getValidSuccessorNodes = function(nodeId) {
         // Get all connections that can be contained in the parent node
@@ -179,11 +186,7 @@ define([
             descs;
 
         validChildren = {}
-        this._client.getChildrenMeta(node.getParentId()).items
-            // Get all descendents
-            .map(info => this._getAllDescendentIds(info.id))
-            .reduce((prev, curr) => prev.concat(curr))
-
+        this._getAllValidChildren(node.getParentId())
             // Add the child to the validChildren dictionary
             .forEach(id => validChildren[id] = true);
 
