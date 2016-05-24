@@ -28,7 +28,7 @@ define([
     SelectionManager.prototype.initActions = function() {
         this.ACTIONS = {
             add: this._widget.onAddButtonClicked.bind(this._widget),
-            remove: (item) => {
+            remove: item => {
                 this._widget.removeItem(item);
                 this.deselect();
             },
@@ -139,13 +139,13 @@ define([
                 .attr('stroke-dasharray', '4,4')
                 .attr('stroke', DOTTED_COLOR)
                 .attr('fill', 'none')
-                .attr('opacity', 1)
+                .attr('opacity', 1);
 
-            this._createActionButtons(width, height);
+            this.createActionButtons(width, height);
         }
     };
 
-    SelectionManager.prototype._createActionButtons = function(width, height) {
+    SelectionManager.prototype.createActionButtons = function(width, height) {
         // Check if the selected item can have successors
         var successorNodes,
             cx = width/2,
@@ -161,7 +161,6 @@ define([
             y: height,
             disabled: successorNodes.length === 0
         });
-        //this._createActionButton('add', width/2, height, successorNodes.length === 0);
 
         // Remove button
         btn = new Buttons.Delete({
@@ -171,12 +170,6 @@ define([
             x: cx,
             y: 0
         });
-        //this._createActionButton('remove', width/2, 0);
-
-        // Move button
-        // TODO: Add this later
-        //this._createActionButton('move', width, 0);
-
     };
 
     SelectionManager.prototype.isSelected = function(id) {
@@ -184,39 +177,6 @@ define([
             return this.selectedItem.id === id;
         }
         return false;
-    };
-
-    SelectionManager.prototype._createActionButton = function(action, cx, cy, inactive) {
-        var button,
-            color = inactive ? BUTTON_COLOR_INACTIVE : BUTTON_COLOR,  // FIXME: This would be better as css
-            x = cx - BUTTON_SIZE/2,
-            y = cy - BUTTON_SIZE/2,
-            drawFn = this.BUTTONS[action] || nop;
-
-        button = this.$selection
-            .append('g')
-            .attr('class', 'buttons action ' + action);
-
-        button.append('rect')
-            .attr('x', x)
-            .attr('y', y)
-            .attr('width', BUTTON_SIZE)
-            .attr('height', BUTTON_SIZE)
-            .attr('fill', color);
-
-        drawFn(button, x, x+BUTTON_SIZE, y, y+BUTTON_SIZE);
-
-        if (!inactive) {
-            button.on('click', this._onBtnPressed.bind(this, action))
-        }
-
-        return button;
-    };
-
-    SelectionManager.prototype._onBtnPressed = function(action) {
-        d3.event.stopPropagation();
-        d3.event.preventDefault();
-        this.ACTIONS[action].call(this, this.selectedItem);
     };
 
     return SelectionManager;

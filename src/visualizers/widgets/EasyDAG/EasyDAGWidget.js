@@ -65,11 +65,12 @@ define([
         KeyBindings.call(this);
 
         // Selection manager
-        this.selectionManager = new SelectionManager(this);
+        this.selectionManager = new this.SelectionManager(this);
         this._logger.debug('ctor finished');
     };
 
     EasyDAGWidget.prototype.ItemClass = DAGItem;
+    EasyDAGWidget.prototype.SelectionManager = SelectionManager;
     EasyDAGWidget.prototype._initialize = function () {
         var self = this;
 
