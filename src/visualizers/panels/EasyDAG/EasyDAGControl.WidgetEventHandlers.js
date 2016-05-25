@@ -10,13 +10,7 @@ define([
         END: 'dst'
     };
 
-    var EasyDAGControlEventHandlers = function() {
-        //this._widget.onNodeClick = function (id) {
-            //// Change the current active object
-            //WebGMEGlobal.State.registerActiveObject(id);
-        //};
-
-    };
+    var EasyDAGControlEventHandlers = function() {};
 
     EasyDAGControlEventHandlers.prototype._initWidgetEventHandlers = function() {
         this._widget.getValidSuccessorNodes = this._getValidSuccessorNodes.bind(this);
@@ -285,14 +279,25 @@ define([
             nodeIds = this._getSubtreeAt(children, nodeId),
             connIds;
 
-        // Add all connections to the nodeId
+        // Add all connections to the nodeId (or contained children)
         connIds = children.filter(child => child.isConnection())
-            .filter(child => child.getPointer('dst').to === nodeId)
+            .filter(child => child.getPointer('dst').to.indexOf(nodeId) === 0)
             .map(conn => conn.getId());
 
         // Remove all of the nodeIds
         this._client.delMoreNodes(nodeIds.concat(connIds));
 
+    };
+
+    EasyDAGControlEventHandlers.prototype._getSiblingContaining = function(id) {
+        var node = this._client.getNode(id);
+
+        while (node.getParentId() !== this._currentNodeId) {
+            id = node.getParentId();
+            node = this._client.getNode(id);
+        }
+
+        return id;
     };
 
     // FIXME: Don't return nodes that have connections from other
@@ -306,7 +311,7 @@ define([
             getSubtree = this._getSubtreeAt.bind(this);
 
         for (var i = nodes.length; i--;) {
-            if (nodes[i].isConnection() && nodes[i].getPointer('src').to === nodeId) {
+            if (nodes[i].isConnection() && (nodes[i].getPointer('src').to.indexOf(nodeId) === 0)) {
                 conns.push(nodes[i]);
             } else {
                 remainingNodes.push(nodes[i]);
@@ -317,7 +322,10 @@ define([
         connIds = conns.map(conn => conn.getId());
 
         // Get the dst of each connection
-        dstIds = conns.map(conn => conn.getPointer('dst').to);
+        // Make sure it is the sibling container
+        dstIds = conns
+            .map(conn => conn.getPointer('dst').to)
+            .map(dstId => this._getSiblingContaining(dstId));
 
         // Return the nodeId, connectionIds and the subtrees at the dstIds
         connIds.push(nodeId);
