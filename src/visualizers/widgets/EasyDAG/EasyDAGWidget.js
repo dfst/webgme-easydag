@@ -199,6 +199,10 @@ define([
     };
 
     EasyDAGWidget.prototype.addConnection = function (desc) {
+        if (!desc.src || !desc.dst) {
+            this._logger.warn(`Connection ${desc.id} will not be rendered - needs both src and dst!`);
+            return;
+        }
         var conn = new Connection(this.$connContainer, desc);
         this.graph.setEdge(desc.src, desc.dst, conn);
 
@@ -232,6 +236,10 @@ define([
     EasyDAGWidget.prototype._removeConnection = function (gmeId) {
         // Delete the subtree rooted at the dst node
         var conn = this.connections[gmeId];
+        if (!conn) {
+            this._logger.warn(`Connection ${gmeId} doesn't exist. Perhaps it was malformed and not created`);
+            return;
+        }
         this.graph.removeEdge(conn.src, conn.dst);
 
         // Update the successors list
