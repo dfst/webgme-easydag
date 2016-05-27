@@ -81,6 +81,9 @@ define([
             self._selfPatterns[nodeId] = this.TERRITORY_RULE;
             self._client.updateTerritory(self._territoryId, self._selfPatterns);
         }
+
+        // Notify the widget about the current node change
+        self._widget.onActiveNodeChanged(desc.name, !self._client.getNode(nodeId).getChildrenIds().length);
     };
 
     EasyDAGControl.prototype._getNodeDecorator = function (nodeObj) {

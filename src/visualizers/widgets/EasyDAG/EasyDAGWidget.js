@@ -56,7 +56,6 @@ define([
         this.graph = new dagre.graphlib.Graph();
 
         this.active = false;  // TODO: may be able to merge these
-        this.needsUpdate = false;
         this._initialize();
         this.resetGraph();
 
