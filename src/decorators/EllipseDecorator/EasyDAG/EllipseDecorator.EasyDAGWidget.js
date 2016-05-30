@@ -32,7 +32,7 @@ define([
         this.nameWidth = null;
         this.setAttributes();
 
-        this.color = options.color || this.color || '#2196f3';
+        this.color = opts.color || this.color || '#2196f3';
         // Set width, height values
         if (!this.size) {
             this.size = {
@@ -79,7 +79,6 @@ define([
         var height,
             width,
             rx,
-            ry,
             attrNames = Object.keys(this._attributes),
             displayName,
             path,
@@ -99,7 +98,6 @@ define([
             height = y + this.dense.height + textHeight*attrNames.length;
             width = Math.max(this.nameWidth + 2 * NAME_MARGIN, this.size.width);
             rx = width/2;
-            ry = this.size.height/2;
 
             path = [
                 `M${-rx},0`,
@@ -141,7 +139,7 @@ define([
                     .attr('x', rightCol)
                     .attr('text-anchor', 'end')  // FIXME: move this to css
                     .text(`${this._attributes[attrNames[i]]}`)
-                    .on('click', this.editAttribute.bind(this, attrNames[i], rightCol, y))
+                    .on('click', this.editAttribute.bind(this, attrNames[i], rightCol, y));
             }
 
             // Update width, height
@@ -198,12 +196,16 @@ define([
         this.condense();
     };
 
+    EllipseDecorator.prototype.getDisplayName = function() {
+        return this._node.baseName;  // Using the base node name for title
+    };
+
     EllipseDecorator.prototype.setAttributes = function() {
         var attrNames = Object.keys(this._node.attributes),
             name;
 
-        if (this.name !== this._node.baseName) {
-            this.name = this._node.baseName;  // Using the base node name for title
+        if (this.name !== this.getDisplayName()) {
+            this.name = this.getDisplayName();
             this.nameWidth = null;
         }
 
@@ -224,7 +226,7 @@ define([
         return name.replace(/_/g, ' ');
     };
 
-    EllipseDecorator.prototype.editAttribute = function(attr, x, y) {
+    EllipseDecorator.prototype.editAttribute = function(attr) {
         // Edit the node's attribute
         var html = this.attributeFields[attr][0][0],
             position = html.getBoundingClientRect(),
@@ -272,21 +274,23 @@ define([
                 container.remove();
             };
 
-        } else {
+        } else {  // Check if it is a boolean type TODO
             container.editInPlace({
-                    enableEmpty: true,
-                    value: this._attributes[attr],
-                    css: {'z-index': 10000,
-                          'id': 'asdf',
-                          'width': width,
-                          'xmlns': 'http://www.w3.org/1999/xhtml'},
-                    onChange: (oldValue, newValue) => {
-                        this.saveAttribute(attr, newValue);
-                    },
-                    onFinish: function () {
-                        $(this).remove();
-                    }
-                });
+                enableEmpty: true,
+                value: this._attributes[attr],
+                css: {
+                    'z-index': 10000,
+                    'id': 'asdf',
+                    'width': width,
+                    'xmlns': 'http://www.w3.org/1999/xhtml'
+                },
+                onChange: (oldValue, newValue) => {
+                    this.saveAttribute(attr, newValue);
+                },
+                onFinish: function () {
+                    $(this).remove();
+                }
+            });
         }
     };
 
@@ -307,7 +311,7 @@ define([
         this.$body
             .transition()
             .attr('stroke', this.color)
-            .attr('style', `fill:${this.color}`);
+            .attr('fill', this.color);
 
         this.$name
             .attr('text-anchor', 'middle')
