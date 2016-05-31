@@ -43,7 +43,9 @@ define([
     EasyDAGControl.prototype.DEFAULT_DECORATOR = 'EllipseDecorator';
     EasyDAGControl.prototype.TERRITORY_RULE = {children: 1};
     EasyDAGControl.prototype.selectedObjectChanged = function (nodeId) {
-        var desc = this._getObjectDescriptor(nodeId),
+        var node = this._client.getNode(nodeId),
+            parentId = node.getParentId(),
+            name = node.getAttribute('name'),
             self = this;
 
         self._logger.debug('activeObject nodeId \'' + nodeId + '\'');
@@ -61,15 +63,15 @@ define([
             // Put new node's info into territory rules
             self._selfPatterns[nodeId] = {children: 0};
 
-            self._widget.setTitle(desc.name.toUpperCase());
+            self._widget.setTitle(name.toUpperCase());
 
-            if (desc.parentId || desc.parentId === CONSTANTS.PROJECT_ROOT_ID) {
+            if (parentId || parentId === CONSTANTS.PROJECT_ROOT_ID) {
                 self.$btnModelHierarchyUp.show();
             } else {
                 self.$btnModelHierarchyUp.hide();
             }
 
-            self._currentNodeParentId = desc.parentId;
+            self._currentNodeParentId = parentId;
 
             self._territoryId = self._client.addUI(self, function (events) {
                 self._eventCallback(events);
@@ -100,8 +102,7 @@ define([
     EasyDAGControl.prototype._getObjectDescriptor = function (nodeId) {
         var nodeObj = this._client.getNode(nodeId),
             objDescriptor,
-            baseNode,
-            attributes;
+            baseNode;
 
         if (nodeObj) {
             objDescriptor = {
@@ -114,7 +115,7 @@ define([
             };
 
             objDescriptor.name = nodeObj.getAttribute(nodePropertyNames.Attributes.name);
-            baseNode = this._client.getNode(nodeObj.getMetaTypeId());
+            baseNode = this._client.getNode(nodeObj.getBaseId());
             if (baseNode) {
                 objDescriptor.baseName = baseNode.getAttribute(nodePropertyNames.Attributes.name);
             }
