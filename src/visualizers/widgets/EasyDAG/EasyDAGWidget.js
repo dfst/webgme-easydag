@@ -45,6 +45,10 @@ define([
         this._logger = logger.fork('Widget');
 
         this.$el = container;
+        this.$el.css({
+            height: '100%',
+            width: '100%'
+        });
         this._config = DEFAULT_SETTINGS;
         ComponentSettings.resolveWithWebGMEGlobal(this._config, this.getComponentId());
 
