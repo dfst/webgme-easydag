@@ -33,6 +33,7 @@ define([
         this._selfPatterns = {};
         this._currentNodeId = null;
         this._currentNodeParentId = undefined;
+        this._embedded = !!options.embedded;
 
         this._initWidgetEventHandlers();
 
@@ -202,12 +203,16 @@ define([
     };
 
     EasyDAGControl.prototype._attachClientEventListeners = function () {
-        this._detachClientEventListeners();
-        WebGMEGlobal.State.on('change:' + CONSTANTS.STATE_ACTIVE_OBJECT, this._stateActiveObjectChanged, this);
+        if (!this._embedded) {
+            this._detachClientEventListeners();
+            WebGMEGlobal.State.on('change:' + CONSTANTS.STATE_ACTIVE_OBJECT, this._stateActiveObjectChanged, this);
+        }
     };
 
     EasyDAGControl.prototype._detachClientEventListeners = function () {
-        WebGMEGlobal.State.off('change:' + CONSTANTS.STATE_ACTIVE_OBJECT, this._stateActiveObjectChanged);
+        if (!this._embedded) {
+            WebGMEGlobal.State.off('change:' + CONSTANTS.STATE_ACTIVE_OBJECT, this._stateActiveObjectChanged);
+        }
     };
 
     EasyDAGControl.prototype.onActivate = function () {
