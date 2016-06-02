@@ -1,3 +1,4 @@
+/*globals define*/
 define([
     './AttributeValidators'
 ], function(
@@ -59,8 +60,7 @@ define([
     };
 
     EasyDAGControlEventHandlers.prototype._getChildrenOf = function(nodeId) {
-        var parent = this._client.getNode(nodeId || ''),
-            childrenIds;
+        var parent = this._client.getNode(nodeId || '');
 
         // Get the children
         return parent.getChildrenIds().map(this._getObjectDescriptor.bind(this));
@@ -73,7 +73,7 @@ define([
         if (!VALIDATORS[schema.type] || VALIDATORS[schema.type](schema, value)) {
             this._client.setAttributes(nodeId, attr, value);
         } else {
-            console.warn('Cannot set attribute "' + attr + '" to "' + value +'".');
+            this._logger.error('Cannot set attribute "' + attr + '" to "' + value +'".');
         }
     };
 
@@ -105,7 +105,7 @@ define([
         return newNodeId;
     };
 
-    EasyDAGControlEventHandlers.prototype.onAddItem = function(baseId) {
+    EasyDAGControlEventHandlers.prototype.onAddItem = function(/*baseId*/) {
         // nop
     };
 
@@ -168,10 +168,8 @@ define([
         // Get all connections that can be contained in the parent node
         var self = this,
             node = this._client.getNode(nodeId),
-            baseId = node.getBaseId(),
             ancestors = this._getAncestorNodeIds(nodeId),
             dstIds,
-            dstId,
             items,
             dstDict,
             validChildren,
@@ -179,7 +177,7 @@ define([
             connIds,
             descs;
 
-        validChildren = {}
+        validChildren = {};
         this._getAllValidChildren(node.getParentId())
             // Add the child to the validChildren dictionary
             .forEach(id => validChildren[id] = true);
@@ -214,7 +212,7 @@ define([
         // Remove all possibilities that cannot be contained in the parent
         dstIds = Object.keys(dstDict)
             .map(dstId => {
-                return {nodeId: dstId, connId: dstDict[dstId]}
+                return {nodeId: dstId, connId: dstDict[dstId]};
             })
             // Remove nodes that can't be created in the activeNode
             .filter(pair => validChildren[pair.nodeId])
@@ -233,8 +231,7 @@ define([
         var metaNodes = this._client.getAllMetaNodes(),
             results = {},
             nodeIds = [nodeId],
-            next,
-            node;
+            next;
 
         //results[nodeId] = true;
         while (nodeIds.length) {
@@ -276,7 +273,7 @@ define([
     EasyDAGControlEventHandlers.prototype._removeSubtreeAt = function(nodeId) {
         var currentNode = this._client.getNode(this._currentNodeId),
             children = currentNode.getChildrenIds().map(child => this._client.getNode(child)),
-            nodeIds = this._getSubtreeAt(children, nodeId),
+            nodeIds = this.getSuccessors(children, nodeId),
             connIds;
 
         // Add all connections to the nodeId (or contained children)
@@ -302,36 +299,47 @@ define([
 
     // FIXME: Don't return nodes that have connections from other
     // parts of the graph
-    EasyDAGControlEventHandlers.prototype._getSubtreeAt = function(nodes, nodeId) {
+    EasyDAGControlEventHandlers.prototype.getSuccessors = function(nodes, nodeId) {
+        return this._getSomeCessor(true, nodes, nodeId);
+    };
+
+    EasyDAGControlEventHandlers.prototype.getPredecessors = function(nodes, nodeId) {
+        return this._getSomeCessor(false, nodes, nodeId);
+    };
+
+    EasyDAGControlEventHandlers.prototype._getSomeCessor = function(fwrd, nodes, nodeId) {
         // Get connections with this item as a 'src'
         var conns = [],
             connIds,
             dstIds,
             remainingNodes = [],
-            getSubtree = this._getSubtreeAt.bind(this);
+            getMoreCessors,
+            ptr;
 
+        ptr = fwrd ? 'src' : 'dst';
         for (var i = nodes.length; i--;) {
-            if (nodes[i].isConnection() && (nodes[i].getPointer('src').to.indexOf(nodeId) === 0)) {
+            if (nodes[i].isConnection() && (nodes[i].getPointer(ptr).to.indexOf(nodeId) === 0)) {
                 conns.push(nodes[i]);
             } else {
                 remainingNodes.push(nodes[i]);
             }
         }
 
-        getSubtree = this._getSubtreeAt.bind(this, remainingNodes);
+        getMoreCessors = this._getSomeCessor.bind(this, fwrd, remainingNodes);
         connIds = conns.map(conn => conn.getId());
 
         // Get the dst of each connection
         // Make sure it is the sibling container
+        ptr = fwrd ? 'dst' : 'src';
         dstIds = conns
-            .map(conn => conn.getPointer('dst').to)
+            .map(conn => conn.getPointer(ptr).to)
             .map(dstId => this._getSiblingContaining(dstId));
 
         // Return the nodeId, connectionIds and the subtrees at the dstIds
         connIds.push(nodeId);
         return connIds
-            .concat(dstIds.map(getSubtree)
-                .reduce((l1, l2) => l1.concat(l2), []));
+            .concat(dstIds.map(getMoreCessors)
+            .reduce((l1, l2) => l1.concat(l2), []));
     };
 
     EasyDAGControlEventHandlers.prototype._isValidTerminalNode = function(nodeId) {
