@@ -19,6 +19,7 @@ define([
         this._widget.filterNodesForMove = this._filterNodesForMove.bind(this);
         this._widget.createConnectedNode = this._createConnectedNode.bind(this);
         this._widget.createNode = this._createNode.bind(this);
+        this._widget.deleteNode = this._deleteNode.bind(this);
         this._widget.removeSubtreeAt = this._removeSubtreeAt.bind(this);
         this._widget.isValidTerminalNode = this._isValidTerminalNode.bind(this);
 
@@ -95,6 +96,31 @@ define([
 
         this._client.completeTransaction();
         
+    };
+
+    EasyDAGControlEventHandlers.prototype._deleteNode = function(nodeId) {
+        var node = this._client.getNode(nodeId),
+            children = this._client.getNode(this._currentNodeId).getChildrenIds(),
+            msg = `Deleting ${node}`,
+            nodeIds,
+            ptr;
+
+        // Also remove any incoming/outgoing connections
+        nodeIds = children.filter(id => {
+            node = this._client.getNode(id);
+
+            // Return true if it has either a src or dst to nodeId
+            return ['src', 'dst']
+                .reduce((has, ptrName) => {
+                    ptr = node.getPointer(ptrName);
+                    return has || (ptr.to && this._getSiblingContaining(ptr.to) === nodeId);
+                }, false);
+        });
+        nodeIds.push(nodeId);
+
+        this._client.startTransaction(msg);
+        this._client.delMoreNodes(nodeIds);
+        this._client.completeTransaction();
     };
 
     EasyDAGControlEventHandlers.prototype._createNode = function(baseId) {
