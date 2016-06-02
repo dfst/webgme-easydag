@@ -17,46 +17,21 @@ define([
     // This function redraws the UI based off the in memory DAG
     // TODO: Replace this with a virtual DOM implementation
     EasyDAGWidgetRefresher.prototype.refreshScreen = function () {
-        var nodeIds,
-            i;
-
         if (!this.active) {
             return;
         }
 
         // WRITE UPDATES
         // Update the locations of all the nodes
-        assert(this.graph.nodes().indexOf('undefined') === -1);
-        dagre.layout(this.graph);
+        this.calculatePositions();
         this.updateTranslation();
 
-        // Remove old items
-        nodeIds = _.difference(this.graph.nodes(), Object.keys(this.items));
-        nodeIds.forEach(nodeId => {
-            this.graph.node(nodeId).remove();
-            this.graph.removeNode(nodeId);
-        });
-
-        // Remove old connections
-        //connIds = _.difference(Object.keys(this.connections), this.graph.edges());
-        //connIds.forEach(connId => {
-            //this.connections[connId].remove();
-            //delete this.connections[connId];
-        //});
-
-        // Redraw items
-        nodeIds = Object.keys(this.items);
-        for (i = nodeIds.length; i--;) {
-            this.items[nodeIds[i]].redraw();
-        }
-
-        // Draw new connections
+        this.refreshItems();
         this.refreshConnections();
 
         this.selectionManager.redraw();
-        this.updateCreateButtons();
         this.updateContainerWidth();
-        this.updateEmptyMsg();
+        this.refreshExtras();
 
         // READ UPDATES
         //nodeIds = Object.keys(this.items);
@@ -66,11 +41,36 @@ define([
 
     };
 
+    EasyDAGWidgetRefresher.prototype.calculatePositions = function () {
+        dagre.layout(this.graph);
+    };
+
+    EasyDAGWidgetRefresher.prototype.refreshExtras = function () {
+        this.updateCreateButtons();
+        this.updateEmptyMsg();
+    };
+
     EasyDAGWidgetRefresher.prototype.refreshConnections = function () {
         var connIds = this.graph.edges();
         for (var i = connIds.length; i--;) {
             this.graph.edge(connIds[i]).redraw();
         }
+    };
+
+    EasyDAGWidgetRefresher.prototype.refreshItems = function () {
+        // Remove old items
+        var nodeIds = _.difference(this.graph.nodes(), Object.keys(this.items));
+        nodeIds.forEach(nodeId => {
+            this.graph.node(nodeId).remove();
+            this.graph.removeNode(nodeId);
+        });
+
+        // Redraw items
+        nodeIds = Object.keys(this.items);
+        for (var i = nodeIds.length; i--;) {
+            this.items[nodeIds[i]].redraw();
+        }
+
     };
 
     EasyDAGWidgetRefresher.prototype.updateTranslation = function () {
