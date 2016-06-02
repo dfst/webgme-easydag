@@ -21,7 +21,8 @@ define(['d3'], function() {
             .transition()
             .attr('stroke-width', 2)
             .attr('stroke', 'black')
-            .attr("marker-end", "url(#arrowhead)");
+            .attr('fill', 'none')
+            .attr('marker-end', 'url(#arrowhead)');
     };
 
     Connection.prototype.remove = function() {
