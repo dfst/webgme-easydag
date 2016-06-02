@@ -97,11 +97,11 @@ define([
             event.stopPropagation();
             event.preventDefault();
             this.selectionManager.deselect();
+            this.refreshUI();
         });
         this.setupItemCallbacks();
 
-        // Setup DAGItem callbacks
-        this.resizeDAG();
+        this.refreshUI();
     };
 
     EasyDAGWidget.prototype.getComponentId = function () {
@@ -170,10 +170,6 @@ define([
         this.graph.setDefaultEdgeLabel(function() { return 'asdfas'; });
     };
 
-    EasyDAGWidget.prototype.onWidgetContainerResize =
-    EasyDAGWidget.prototype.resizeDAG = function (width, height) {
-        this.refreshUI();
-    };
 
     /* * * * * * * * Updating the In Memory DAG * * * * * * * */
 
@@ -188,6 +184,7 @@ define([
                     d3.event.stopPropagation();
                     d3.event.preventDefault();
                     this.selectionManager.select(item);
+                    this.refreshUI();
                 });
 
             this.items[desc.id] = item;
@@ -311,6 +308,7 @@ define([
         KeyBindings.prototype
     );
 
+    EasyDAGWidget.prototype.onWidgetContainerResize =
     EasyDAGWidget.prototype.refreshUI = 
         _.debounce(EasyDAGWidget.prototype.refreshScreen, 50);
 
