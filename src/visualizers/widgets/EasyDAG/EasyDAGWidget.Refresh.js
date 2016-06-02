@@ -1,3 +1,4 @@
+/*globals define, _*/
 
 define([
     './lib/dagre.min',
@@ -16,9 +17,7 @@ define([
     // This function redraws the UI based off the in memory DAG
     // TODO: Replace this with a virtual DOM implementation
     EasyDAGWidgetRefresher.prototype.refreshScreen = function () {
-        var connIds,
-            nodeIds,
-            conn,
+        var nodeIds,
             i;
 
         if (!this.active) {
@@ -52,11 +51,7 @@ define([
         }
 
         // Draw new connections
-        connIds = this.graph.edges();
-        for (i = connIds.length; i--;) {
-            conn = this.graph.edge(connIds[i]);
-            conn.redraw();
-        }
+        this.refreshConnections();
 
         this.selectionManager.redraw();
         this.updateCreateButtons();
@@ -71,12 +66,18 @@ define([
 
     };
 
+    EasyDAGWidgetRefresher.prototype.refreshConnections = function () {
+        var connIds = this.graph.edges();
+        for (var i = connIds.length; i--;) {
+            this.graph.edge(connIds[i]).redraw();
+        }
+    };
+
     EasyDAGWidgetRefresher.prototype.updateTranslation = function () {
-        var self = this,
-            shift = {
-                x: this._getTranslation('x'),
-                y: this._getTranslation('y')
-            };
+        var shift = {
+            x: this._getTranslation('x'),
+            y: this._getTranslation('y')
+        };
 
         // Make sure it is shifted at least 20 px in each direction
         shift.x = Math.max(TOP_LEFT_MIN_MARGIN, shift.x);

@@ -57,7 +57,9 @@ define([
         this.itemCount = 0;
 
         this.connections = {};
-        this.graph = new dagre.graphlib.Graph();
+        this.graph = new dagre.graphlib.Graph({
+            multigraph: true
+        });
 
         this.active = false;  // TODO: may be able to merge these
         this.needsUpdate = false;
@@ -74,6 +76,7 @@ define([
     };
 
     EasyDAGWidget.prototype.ItemClass = DAGItem;
+    EasyDAGWidget.prototype.Connection = Connection;
     EasyDAGWidget.prototype.SelectionManager = SelectionManager;
     EasyDAGWidget.prototype._initialize = function () {
         var self = this;
@@ -204,8 +207,8 @@ define([
             this._logger.warn(`Connection ${desc.id} will not be rendered - needs both src and dst!`);
             return;
         }
-        var conn = new Connection(this.$connContainer, desc);
-        this.graph.setEdge(desc.src, desc.dst, conn);
+        var conn = new this.Connection(this.$connContainer, desc);
+        this.graph.setEdge(desc.src, desc.dst, conn, desc.id);
 
         if (!this.successors[desc.src]) {
             this.successors[desc.src] = [];
@@ -241,7 +244,7 @@ define([
             this._logger.warn(`Connection ${gmeId} doesn't exist. Perhaps it was malformed and not created`);
             return;
         }
-        this.graph.removeEdge(conn.src, conn.dst);
+        this.graph.removeEdge(conn.src, conn.dst, conn.id);
 
         // Update the successors list
         // (if the src node hasn't already been removed)
