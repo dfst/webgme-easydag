@@ -1,17 +1,9 @@
+/* globals define */
 define([
-    'js/Constants'
 ], function(
-    CONSTANTS
 ) {
     'use strict';
     
-    var COLORS = [
-        //'#f44336',
-        //'#9e9e9e'//,
-        //'#ffeb3b',
-        '#2196f3'
-    ];
-
     var DAGItem = function(parentEl, desc) {
         this.id = desc.id;
         this.name = desc.name;
@@ -19,7 +11,7 @@ define([
 
 
         this.$container = parentEl
-            .append('svg');
+            .append('g');
 
         this.$el = this.$container
             .append('g')
@@ -93,11 +85,6 @@ define([
 
         // Draw the button
 
-    };
-
-    DAGItem.prototype.getColor = function() {
-        var index = Math.floor(Math.random()*COLORS.length)
-        return COLORS[index];
     };
 
     DAGItem.prototype.onSelect = function() {
