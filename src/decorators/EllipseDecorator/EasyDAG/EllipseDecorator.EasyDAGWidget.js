@@ -69,6 +69,8 @@ define([
         this.$name = this.$el.append('text')
             .attr('class', 'name')
             .style('font-size', '16px')  // FIXME: Move this to css
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'middle')
             .attr('fill', 'black');
 
         this.$attributes = this.$el.append('g')
@@ -314,7 +316,6 @@ define([
             .attr('fill', this.color);
 
         this.$name
-            .attr('text-anchor', 'middle')
             .text(this.name);
 
         this.updateDenseWidth();
