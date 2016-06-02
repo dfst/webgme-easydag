@@ -6,6 +6,6 @@ WebGME EasyDAG is a visualizer providing a simple interface for creating **d**ir
 ## Quick start
 First, install easydag to your webgme app.
 ```
-webgme add viz EasyDAG webgme-easydag
+webgme import viz EasyDAG webgme-easydag
 ```
 Next, add it to your current layout! An example can be found in [deepforge-caffe](https://github.com/dfst/deepforge-caffe)
