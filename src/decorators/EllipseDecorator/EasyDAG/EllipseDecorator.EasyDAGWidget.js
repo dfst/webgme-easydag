@@ -87,7 +87,7 @@ define([
             textHeight = 15,
 
             // Attributes
-            initialY = 20,
+            initialY = 25,
             attributeMargin = 10,
             leftCol,
             rightCol,
@@ -133,6 +133,7 @@ define([
                     .attr('font-style', 'italic')  // FIXME: move this to css
                     .attr('class', 'attr-title')
                     .attr('text-anchor', 'start')
+                    .attr('dominant-baseline', 'middle')
                     .text(`${displayName}: `);
 
                 // Attribute value
@@ -140,6 +141,7 @@ define([
                     .attr('y', y)
                     .attr('x', rightCol)
                     .attr('text-anchor', 'end')  // FIXME: move this to css
+                    .attr('dominant-baseline', 'middle')
                     .text(`${this._attributes[attrNames[i]]}`)
                     .on('click', this.editAttribute.bind(this, attrNames[i], rightCol, y));
             }
