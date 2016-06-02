@@ -1,6 +1,8 @@
 // This contains all action buttons for this widget
 define([
+    'underscore'
 ], function(
+    _
 ) {
     'use strict';
 
@@ -141,12 +143,24 @@ define([
     };
 
     DeleteBtn.prototype._onClick = function(item) {
-        this.removeItem(item);
+        this.removeWithSuccessors(item);
+        this.selectionManager.deselect();
+    };
+
+    var DeleteOne = function(params) {
+        ButtonBase.call(this, params);
+    };
+
+    _.extend(DeleteOne.prototype, DeleteBtn.prototype);
+
+    DeleteOne.prototype._onClick = function(item) {
+        this.deleteNode(item.id);
         this.selectionManager.deselect();
     };
 
     return {
         Add: Add,
-        Delete: DeleteBtn
+        Delete: DeleteBtn,
+        DeleteOne: DeleteOne
     };
 });

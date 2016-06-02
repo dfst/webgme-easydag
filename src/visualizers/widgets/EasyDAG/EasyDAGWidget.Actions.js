@@ -85,6 +85,7 @@ define([
         }
     };
 
+    EasyDAGWidgetActions.prototype.removeWithSuccessors =
     EasyDAGWidgetActions.prototype.removeItem = function(item) {
         // Remove the given item and all subsequent items
         this.removeSubtreeAt(item.id);
