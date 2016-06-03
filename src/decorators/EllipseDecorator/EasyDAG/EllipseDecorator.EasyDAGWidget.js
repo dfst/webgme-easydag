@@ -70,9 +70,11 @@ define([
 
         this.$body = this.$el
             .append('path')
+            .attr('opacity', 0)
             .attr('class', 'layer-decorator');
 
         this.$name = this.$el.append('text')
+            .attr('opacity', 0)
             .attr('class', 'name')
             .style('font-size', '16px')  // FIXME: Move this to css
             .attr('text-anchor', 'middle')
@@ -324,11 +326,16 @@ define([
     EllipseDecorator.prototype.render = function() {
         this.$body
             .transition()
+            .delay(200)
+            .attr('opacity', 1)
             .attr('stroke', this.color)
             .attr('fill', this.color);
 
         this.$name
-            .text(this.name);
+            .text(this.name)
+            .transition()
+            .delay(200)
+            .attr('opacity', 1);
 
         this.updateDenseWidth();
     };

@@ -1,3 +1,4 @@
+/*globals define, $, d3, _*/
 define([
     'text!./templates/AddNodeDialog.html.ejs',
     'text!./templates/NodeRow.html'
@@ -9,6 +10,7 @@ define([
 
     var COL_CLASS = 'col-md-2 col-xs-4',
         ADD_NODE_CLASS = 'add-node';
+
     var AddNodeDialog = function() {
         this._template = _.template(AddNodeTemplate);
         this._dialog = null;
@@ -16,55 +18,31 @@ define([
 
     AddNodeDialog.prototype.show = function(title, pairs) {
         // Populate the template
-        var self = this,
-            content = this._template({title}),
-            nodes = pairs.map(this.pairToHtml.bind(this)),
+        var content = this._template({title}),
+            containers = pairs.map(p => new Container(p)),
             container,
             row;
 
         // Create the dialog and add the nodes
         this._dialog = $(content);
         container = this._dialog.find('#node-container');
-        nodes.forEach((html, i) => {
-            if (i % 6 === 0) {
-                row = $(NODE_ROW);
-                container.append(row);
-            }
-            row.append(html);
-        });
+        containers
+            .forEach((node, i) => {
+                if (i % 6 === 0) {
+                    row = $(NODE_ROW);
+                    container.append(row);
+                }
+                row.append(node.html);
+                node.html.onclick = this.onNodeClicked.bind(this, node.pair);
+            });
+        this._dialog.on('shown.bs.modal',
+            () => containers.forEach(d => d.updateSize()));
         this._dialog.modal('show');
     };
 
-    AddNodeDialog.prototype.pairToHtml = function(pair) {
-        var container = document.createElement('div'),
-            decorator,
-            svg = d3.select(container).append('svg'),
-            x,
-            y;
-
-        decorator = new pair.node.Decorator({
-            node: pair.node,
-            parentEl: svg.append('g')
-        });
-
-        // Adjust the decorator position
-        x = decorator.width/2;
-        y = decorator.height/2;
-        svg
-            .attr('width', decorator.width)
-            .attr('height', decorator.height)
-            .on('click', this.onNodeClicked.bind(this, pair));
-
-        decorator.render();
-
-        container.className = COL_CLASS;
-
-        return container;
-    };
-
     AddNodeDialog.prototype.onNodeClicked = function(pair, event) {
-        d3.event.stopPropagation();
-        d3.event.preventDefault();
+        event.stopPropagation();
+        event.preventDefault();
         this.onSelect(pair);
         this._dialog.modal('hide');
     };
@@ -72,6 +50,26 @@ define([
     AddNodeDialog.prototype.onSelect = function() {
         // nop
         console.log('onSelect is not overridden!');
+    };
+
+    var Container = function(pair) {
+        this.pair = pair;
+        this.html = document.createElement('div');
+        this.svg = d3.select(this.html).append('svg');
+        this.decorator = new pair.node.Decorator({
+            node: pair.node,
+            parentEl: this.svg
+        });
+
+        this.html.className = COL_CLASS;
+    };
+
+    Container.prototype.updateSize = function() {
+        this.decorator.render();
+        this.html.style.width = this.decorator.width + 'px';
+        this.html.style.height = this.decorator.height + 'px';
+        this.svg.attr('width', this.decorator.width);
+        this.svg.attr('height', this.decorator.height);
     };
 
     return AddNodeDialog;
