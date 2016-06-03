@@ -26,13 +26,19 @@ define([
     EllipseDecorator = function (options) {
         var opts = _.extend({}, options);
 
-        this._node = options.node;
+        this._node = opts.node;
         this._attrToDisplayName = {};
         this.attributeFields = {};
         this.nameWidth = null;
         this.setAttributes();
 
-        this.color = opts.color || this.color || '#2196f3';
+        // Precedence for coloring:
+        //  - set in subclass
+        //  - set in DAGItem (as argument)
+        //  - set in Control
+        this.color = this.color || opts.color ||
+            this._node.color || '#2196f3';
+        this.usingNodeColor = !(this.color || opts.color);
         // Set width, height values
         if (!this.size) {
             this.size = {
@@ -220,6 +226,10 @@ define([
                 this._attrToDisplayName[attrNames[i]] = name;
                 this._attributes[attrNames[i]] = this._node.attributes[attrNames[i]];
             }
+        }
+
+        if (this.usingNodeColor) {
+            this.color = this._node.color || this.color;
         }
     };
 
