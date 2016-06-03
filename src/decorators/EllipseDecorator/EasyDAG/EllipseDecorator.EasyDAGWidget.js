@@ -9,12 +9,14 @@ define([
     'js/Constants',
     'js/NodePropertyNames',
     'widgets/EasyDAG/EasyDAGWidget.DecoratorBase',
+    './Attribute',
     'css!./EllipseDecorator.EasyDAGWidget.css',
     'd3'
 ], function (
     CONSTANTS,
     nodePropertyNames,
-    DecoratorBase
+    DecoratorBase,
+    AttributeField
 ) {
 
     'use strict';
@@ -27,9 +29,10 @@ define([
         var opts = _.extend({}, options);
 
         this._node = opts.node;
-        this._attrToDisplayName = {};
         this.attributeFields = {};
         this.nameWidth = null;
+        this.skipAttributes = this.skipAttributes || options.skipAttributes ||
+            {name: true};
         this.setAttributes();
 
         // Precedence for coloring:
@@ -90,15 +93,12 @@ define([
             width,
             rx,
             attrNames = Object.keys(this._attributes),
-            displayName,
+            attr,
             path,
             textHeight = 15,
 
             // Attributes
             initialY = 25,
-            attributeMargin = 10,
-            leftCol,
-            rightCol,
             y = 5;
 
         // Only expand if the node has attributes to show
@@ -125,33 +125,16 @@ define([
 
             // Add the attribute fields
             y += initialY;
-            leftCol = -rx + attributeMargin;
-            rightCol = rx - attributeMargin;
             this.$attributes.remove();
             this.$attributes = this.$el.append('g')
                 .attr('fill', '#222222');
             for (var i = attrNames.length; i--;) {
                 // Create two text boxes (2nd is editable)
                 y += textHeight;
-                displayName = this._attrToDisplayName[attrNames[i]];
-                // Attribute name
-                this.$attributes.append('text')
-                    .attr('y', y)
-                    .attr('x', leftCol)
-                    .attr('font-style', 'italic')  // FIXME: move this to css
-                    .attr('class', 'attr-title')
-                    .attr('text-anchor', 'start')
-                    .attr('dominant-baseline', 'middle')
-                    .text(`${displayName}: `);
-
-                // Attribute value
-                this.attributeFields[attrNames[i]] = this.$attributes.append('text')
-                    .attr('y', y)
-                    .attr('x', rightCol)
-                    .attr('text-anchor', 'end')  // FIXME: move this to css
-                    .attr('dominant-baseline', 'middle')
-                    .text(`${this._attributes[attrNames[i]]}`)
-                    .on('click', this.editAttribute.bind(this, attrNames[i], rightCol, y));
+                attr = this._attributes[attrNames[i]];
+                this.attributeFields[attrNames[i]] =
+                    new AttributeField(this.$attributes, attr, y, width);
+                this.attributeFields[attrNames[i]].saveAttribute = this.saveAttribute.bind(this, attrNames[i]);
             }
 
             // Update width, height
@@ -223,90 +206,14 @@ define([
 
         this._attributes = {};
         for (var i = attrNames.length; i--;) {
-            name = this.getAttributeDisplayName(attrNames[i]);
-            if (name !== null) {
-                this._attrToDisplayName[attrNames[i]] = name;
+            name = attrNames[i];
+            if (!this.skipAttributes[name]) {
                 this._attributes[attrNames[i]] = this._node.attributes[attrNames[i]];
             }
         }
 
         if (this.usingNodeColor) {
             this.color = this._node.color || this.color;
-        }
-    };
-
-    EllipseDecorator.prototype.getAttributeDisplayName = function(name) {
-        if (name === 'name') {
-            return null;
-        }
-        return name.replace(/_/g, ' ');
-    };
-
-    EllipseDecorator.prototype.editAttribute = function(attr) {
-        // Edit the node's attribute
-        var html = this.attributeFields[attr][0][0],
-            position = html.getBoundingClientRect(),
-
-            width = Math.max(position.right-position.left, 15),
-            container = $('<div>'),
-            parentHtml = $('body'),
-            values = this.getEnumValues(attr);
-
-        // foreignObject was not working so we are using a tmp container
-        // instead
-        container.css('top', position.top);
-        container.css('left', position.left);
-        container.css('position', 'absolute');
-        container.css('width', width);
-        container.attr('id', 'CONTAINER-TMP');
-
-        $(parentHtml).append(container);
-
-        // Get the attribute schema
-        if (values) {
-            var dropdown = document.createElement('select'),
-                option,
-                self = this,
-                arrowMargin = 30;
-
-            for (var i = values.length; i--;) {
-                option = document.createElement('option');
-                option.setAttribute('value', values[i]);
-                option.innerHTML = values[i];
-                // set the default
-                if (this._attributes[attr] === values[i]) {
-                    option.setAttribute('selected', 'selected');
-                }
-                dropdown.appendChild(option);
-            }
-            dropdown.style.width = (width + arrowMargin)+ 'px';
-            container.append(dropdown);
-            dropdown.focus();
-            // on select
-            dropdown.onblur = function() {
-                if (this.value !== self._attributes[attr]) {
-                    self.saveAttribute(attr, this.value);
-                }
-                container.remove();
-            };
-
-        } else {  // Check if it is a boolean type TODO
-            container.editInPlace({
-                enableEmpty: true,
-                value: this._attributes[attr],
-                css: {
-                    'z-index': 10000,
-                    'id': 'asdf',
-                    'width': width,
-                    'xmlns': 'http://www.w3.org/1999/xhtml'
-                },
-                onChange: (oldValue, newValue) => {
-                    this.saveAttribute(attr, newValue);
-                },
-                onFinish: function () {
-                    $(this).remove();
-                }
-            });
         }
     };
 

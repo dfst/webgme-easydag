@@ -124,7 +124,18 @@ define([
             // Add the attributes
             nodeObj.getAttributeNames()
                 .forEach((name) => {
-                    objDescriptor.attributes[name] = nodeObj.getAttribute(name);
+                    var meta = this._client.getAttributeSchema(nodeId, name),
+                        type;
+
+                    if (meta) {  // skip meta-invalid properties
+                        type = meta.type;
+                        objDescriptor.attributes[name] = {
+                            name: name,
+                            type: type,
+                            values: meta.enum,
+                            value: nodeObj.getAttribute(name)
+                        };
+                    }
                 });
 
             // If it is a connection, store the src, dst pointer
