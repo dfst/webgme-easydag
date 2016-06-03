@@ -7,7 +7,7 @@ define([
 ) {
     'use strict';
 
-    var COL_CLASS = 'col-md-2',
+    var COL_CLASS = 'col-md-2 col-xs-4',
         ADD_NODE_CLASS = 'add-node';
     var AddNodeDialog = function() {
         this._template = _.template(AddNodeTemplate);
