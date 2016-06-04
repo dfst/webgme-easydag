@@ -44,9 +44,9 @@ define([
     EasyDAGControl.prototype.DEFAULT_DECORATOR = 'EllipseDecorator';
     EasyDAGControl.prototype.TERRITORY_RULE = {children: 1};
     EasyDAGControl.prototype.selectedObjectChanged = function (nodeId) {
-        var node = this._client.getNode(nodeId),
-            parentId = node.getParentId(),
-            name = node.getAttribute('name'),
+        var parentId,
+            node,
+            name,
             self = this;
 
         self._logger.debug('activeObject nodeId \'' + nodeId + '\'');
@@ -61,6 +61,10 @@ define([
         self._currentNodeParentId = undefined;
 
         if (self._currentNodeId || self._currentNodeId === CONSTANTS.PROJECT_ROOT_ID) {
+            node = self._client.getNode(nodeId);
+            parentId = node.getParentId();
+            name = node.getAttribute('name');
+
             // Put new node's info into territory rules
             self._selfPatterns[nodeId] = {children: 0};
 
@@ -81,7 +85,7 @@ define([
             // Update the territory
             self._client.updateTerritory(self._territoryId, self._selfPatterns);
 
-            self._selfPatterns[nodeId] = this.TERRITORY_RULE;
+            self._selfPatterns[nodeId] = self.TERRITORY_RULE;
             self._client.updateTerritory(self._territoryId, self._selfPatterns);
         }
     };
