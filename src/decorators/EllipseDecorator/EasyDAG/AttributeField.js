@@ -1,12 +1,14 @@
-/*globals $, define */
+/*globals $, _, define */
 
 // This is for displaying and editing attributes of different types
 // They will be able to:
 //  - render
 //  - edit
 define([
+    './Field',
     'blob/BlobClient'
 ], function(
+    Field,
     BlobClient
 ) {
     'use strict';
@@ -14,36 +16,21 @@ define([
         FILE_DOWNLOAD_ANCHOR = $('<a target="_self"/>');
 
     var AttributeField = function(logger, parentEl, attr, y, width) {
-        this._name = attr.name;
         this._blobClient = new BlobClient({
             logger: logger.fork('BlobClient')
         });
-        this.name = this._name.replace(/_/g, ' ');  // Display name
-        this.$parent = parentEl;
         this.attr = attr;
         this.$icon = null;
-        this.isEmpty = !this.attr.value && this.attr.value !== 0;
-
-        // Attribute name
-        var leftCol = -width/2 + AttributeField.PADDING;
-
-        this.$label = this.$parent.append('text')
-            .attr('y', y)
-            .attr('x', leftCol)
-            .attr('font-style', 'italic')  // FIXME: move this to css
-            .attr('class', 'attr-title')
-            .attr('text-anchor', 'start')
-            .attr('dominant-baseline', 'middle')
-            .text(`${this.name}: `);
-
-        // Attribute value
-        this.createContent(width, y);
-
+        Field.call(this, parentEl, attr.name.replace(/_/g, ' '),
+            attr.value, width, y);
     };
 
-    AttributeField.PADDING = 12,
-    AttributeField.BUTTON_MARGIN = 12,
-    AttributeField.prototype.EMPTY_MSG = '<none>';
+    _.extend(AttributeField.prototype, Field.prototype);
+
+    AttributeField.prototype.isEmpty = function() {
+        return !this.attr.value && this.attr.value !== 0;
+    };
+
     AttributeField.prototype.createContent = function(width, y) {
         if (this.attr.type === 'asset') {
             // Get the name using the blobclient
@@ -56,34 +43,19 @@ define([
                     name = info.name;
                 }
 
-                this._createContent(width, y, name);
+                Field.prototype.createContent.call(this, width, y, name);
                 this._enableFileHandlers();
             });
         } else {
-            this._createContent(width, y);
+            Field.prototype.createContent.call(this, width, y, this.attr.value);
         }
     };
 
     AttributeField.prototype._addDownloadLink = function(url) {
-        if (this.attr.type === 'asset' && this.attr.value) {
-            var html = this.$content[0][0],
-                position = html.getBoundingClientRect(),
-                parentHtml = $('body'),
-                container = FILE_DOWNLOAD_ANCHOR.clone(),
-                icon = $('<span/>');
-
-            container.css('top', position.top);
-            container.css('left', position.right + 5);
-            container.css('position', 'absolute');
-            container.attr('id', 'download-file-icon');
-            container.attr('href', url);
-            this.$icon = container;
-
-            icon.attr('class', 'glyphicon glyphicon-download');
-
-            container.append(icon);
-            $(parentHtml).append(container);
-        }
+        this.createIcon('glyphicon-download',
+            FILE_DOWNLOAD_ANCHOR.clone(),
+            url
+        );
     };
 
     AttributeField.prototype._enableFileHandlers = function() {
@@ -158,24 +130,8 @@ define([
         }
     };
 
-    AttributeField.prototype._createContent = function(width, y, content) {
-        var x = width/2 - AttributeField.PADDING;
-        if (this.isAsset() && this.attr.value) {
-            x -= AttributeField.BUTTON_MARGIN;
-        }
-        content = content || (this.isEmpty ? this.EMPTY_MSG : this.attr.value);
-        this.$content = this.$parent.append('text')
-            .attr('y', y)
-            .attr('x', x)
-            .attr('text-anchor', 'end')  // FIXME: move this to css
-            .attr('dominant-baseline', 'middle')
-            .text(`${content}`)
-            .on('click', this.onClick.bind(this));
-
-        if (this.isEmpty) {
-            this.$content.attr('font-style', 'italic');
-        }
-
+    AttributeField.prototype.hasIcon = function() {
+        return this.isAsset() && this.attr.value;
     };
 
     AttributeField.prototype.onClick = function() {
@@ -266,25 +222,8 @@ define([
         }
     };
 
-    AttributeField.prototype.width = function() {
-        var elements = [this.$label, this.$content].map(el => el[0][0]);
-
-        if (this.$icon) {
-            elements.push(this.$icon[0]);
-        }
-
-        return elements.map(el => el.getBoundingClientRect().width)
-            .reduce((a, b) => a+b, 0);
-    };
-
     AttributeField.prototype.uploadFile = function() {
         this._uploadFileInput.click();
-    };
-
-    AttributeField.prototype.destroy = function() {
-        if (this.$icon) {
-            this.$icon.remove();
-        }
     };
 
     return AttributeField;

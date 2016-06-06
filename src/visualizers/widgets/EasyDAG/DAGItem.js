@@ -53,6 +53,10 @@ define([
         this.decorator.getEnumValues = attr => {
             return this.getEnumValues(attr);
         };
+
+        this.decorator.selectTargetFor = ptr => {
+            return this.selectTargetFor(this.id, ptr);
+        };
     };
 
     DAGItem.prototype.remove = function() {

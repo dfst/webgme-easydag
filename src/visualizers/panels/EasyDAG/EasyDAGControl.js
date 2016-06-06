@@ -116,6 +116,7 @@ define([
                 parentId: nodeObj.getParentId(),
                 isConnection: GMEConcepts.isConnection(nodeId),
                 attributes: {},
+                pointers: {},
                 baseName: null
             };
 
@@ -141,6 +142,11 @@ define([
                         };
                     }
                 });
+
+            // Add the pointers
+            nodeObj.getPointerNames()
+                .filter(name => name !== 'base')
+                .forEach(name => objDescriptor.pointers[name] = nodeObj.getPointerId(name));
 
             // If it is a connection, store the src, dst pointer
             if (objDescriptor.isConnection) {

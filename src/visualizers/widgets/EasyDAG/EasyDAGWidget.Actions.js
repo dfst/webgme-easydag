@@ -1,3 +1,4 @@
+/*globals define*/
 define([
     './AddNodeDialog'
 ], function(
@@ -9,45 +10,47 @@ define([
     };
 
     EasyDAGWidgetActions.prototype.onCreateInitialNode = function() {
-        var initialNodes = this.getValidInitialNodes(),
-            initialNode = initialNodes[0];
-
-        if (initialNodes.length > 1) {
-            // Create the modal view with all possible subsequent nodes
-            var dialog = new AddNodeDialog(),
-                title = 'Which node would you like to create?';
-
-            dialog.show(title, initialNodes.map(node => {
-                return {node};
-            }));
-            dialog.onSelect = nodeInfo => {
-                if (nodeInfo) {
-                    this.createNode(nodeInfo.node.id);
-                }
-            };
-        } else {
-            this.createNode(initialNode.id);
-        }
+        var initialNodes = this.getValidInitialNodes().map(node => {
+            return {node};
+        });
+                
+        this.promptNodeSelect(initialNodes, selected => {
+            this.createNode(selected.node.id);
+        });
     };
 
     EasyDAGWidgetActions.prototype.onAddButtonClicked = function(item) {
-        var successorPairs = this.getValidSuccessorNodes(item.id),
-            successor = successorPairs[0];
+        var successorPairs = this.getValidSuccessorNodes(item.id);
 
-        if (successorPairs.length > 1) {
+        this.promptNodeSelect(successorPairs, node => {
+            this.onAddItemSelected(item, node);
+        });
+    };
+
+    EasyDAGWidgetActions.prototype.promptNodeSelect = function(nodes, callback) {
+        // If only one, don't prompt
+        if (nodes.length > 1) {
             // Create the modal view with all possible subsequent nodes
-            var dialog = new AddNodeDialog(),
-                title = this._getAddSuccessorTitle(item);
-
-            dialog.show(title, successorPairs);
+            var dialog = new AddNodeDialog();
+            dialog.show(null, nodes);
             dialog.onSelect = pair => {
                 if (pair) {
-                    this.onAddItemSelected(item, pair);
+                    callback(pair);
                 }
             };
-        } else if (successor) {
-            this.onAddItemSelected(item, successor);
+        } else if (nodes[0]) {
+            callback(nodes[0]);
         }
+    };
+
+    EasyDAGWidgetActions.prototype.selectTargetFor = function(itemId, ptr) {
+        // Get valid targets for itemId, ptr
+        var validTargets = this.getValidTargetsFor(itemId, ptr);
+
+        // Show them to the user
+        this.promptNodeSelect(validTargets, selected => {
+            this.setPointerForNode(itemId, ptr, selected.node.id);
+        });
     };
 
     EasyDAGWidgetActions.prototype.onAddItemSelected = function(item, selected) {
@@ -70,8 +73,7 @@ define([
         }
     };
 
-    EasyDAGWidgetActions.prototype.moveItem = function(item, dstItem) {
-        console.log('Moving ' + item.name + ' to ' + dstItem.name);
+    EasyDAGWidgetActions.prototype.moveItem = function(/*item, dstItem*/) {
         this._hideMoveButtons();
         // Remove all incoming connections to "item" and add connection from dst to item
         // TODO
