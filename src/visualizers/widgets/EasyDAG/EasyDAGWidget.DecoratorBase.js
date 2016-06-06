@@ -80,6 +80,9 @@ define([
         this.$el.on('mouseout', () => this.$tooltip.hide());
     };
 
+    EasyDAGDecoratorBase.prototype.destroy = function() {
+    };
+
     EasyDAGDecoratorBase.prototype.disableTooltip = function() {
         if (this.$tooltip) {
             this.$tooltip.deactivate();

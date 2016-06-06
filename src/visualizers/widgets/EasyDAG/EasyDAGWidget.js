@@ -284,6 +284,11 @@ define([
 
     /* * * * * * * * Visualizer life cycle callbacks * * * * * * * */
     EasyDAGWidget.prototype.destroy = function () {
+        // Call destroy on every item!
+        var ids = Object.keys(this.items);
+        for (var i = ids.length; i--;) {
+            this.items[ids[i]].destroy();
+        }
     };
 
     EasyDAGWidget.prototype.onActivate = function () {
