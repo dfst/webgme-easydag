@@ -29,8 +29,9 @@ define([
         var opts = _.extend({}, options);
 
         this._node = opts.node;
-        this.attributeFields = {};
+        this.attributeFields = [];
         this.nameWidth = null;
+        this.fieldsWidth = null;
         this.skipAttributes = this.skipAttributes || options.skipAttributes ||
             {name: true};
         this.setAttributes();
@@ -93,6 +94,7 @@ define([
             width,
             rx,
             attrNames = Object.keys(this._attributes),
+            attrField,
             attr,
             path,
             textHeight = 15,
@@ -106,7 +108,11 @@ define([
 
             // Get the height from the number of attributes
             height = y + this.dense.height + textHeight*attrNames.length;
-            width = Math.max(this.nameWidth + 2 * NAME_MARGIN, this.size.width);
+            width = Math.max(
+                this.nameWidth + 2 * NAME_MARGIN,
+                this.size.width,
+                this.fieldsWidth + 3 * NAME_MARGIN
+            );
             rx = width/2;
 
             path = [
@@ -132,9 +138,15 @@ define([
                 // Create two text boxes (2nd is editable)
                 y += textHeight;
                 attr = this._attributes[attrNames[i]];
-                this.attributeFields[attrNames[i]] =
-                    new AttributeField(this.$attributes, attr, y, width);
-                this.attributeFields[attrNames[i]].saveAttribute = this.saveAttribute.bind(this, attrNames[i]);
+                attrField = new AttributeField(
+                    this.logger,
+                    this.$attributes,
+                    attr,
+                    y,
+                    width
+                );
+                this.attributeFields.push(attrField);
+                attrField.saveAttribute = this.saveAttribute.bind(this, attrNames[i]);
             }
 
             // Update width, height
@@ -168,6 +180,7 @@ define([
             .attr('d', path);
 
         // Clear the attributes
+        this.attributeFields.forEach(field => field.destroy());
         this.$attributes.remove();
         this.$attributes = this.$el.append('g')
             .attr('fill', '#222222');
@@ -215,6 +228,7 @@ define([
         if (this.usingNodeColor) {
             this.color = this._node.color || this.color;
         }
+        this.fieldsWidth = null;
     };
 
     // Reads the name width if it is currently unknown
@@ -227,6 +241,15 @@ define([
                 // Fix the condensed size
                 this.condense();
             }
+        }
+    };
+
+    EllipseDecorator.prototype.updateExpandedWidth = function() {
+        if (!this.fieldsWidth && this.expanded) {
+            this.fieldsWidth = Math.max.apply(null,
+                this.attributeFields.map(field => field.width())
+            );
+            this.expand();
         }
     };
 
@@ -244,7 +267,9 @@ define([
             .delay(200)
             .attr('opacity', 1);
 
+        this.attributeFields.forEach(field => field.render());
         this.updateDenseWidth();
+        this.updateExpandedWidth();
     };
 
     EllipseDecorator.prototype.update = function(node) {
@@ -256,6 +281,10 @@ define([
         } else {
             this.condense();
         }
+    };
+
+    EllipseDecorator.prototype.destroy = function() {
+        this.attributeFields.forEach(field => field.destroy());
     };
 
     EllipseDecorator.prototype.DECORATORID = DECORATOR_ID;

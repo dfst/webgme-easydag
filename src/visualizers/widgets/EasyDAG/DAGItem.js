@@ -95,6 +95,10 @@ define([
         this.decorator.onDeselect();
     };
 
+    DAGItem.prototype.destroy = function() {
+        this.decorator.destroy();
+    };
+
     /* * * * * * * * ERRORS/WARNINGS * * * * * * * */
 
     DAGItem.prototype.error = function(message) {
@@ -117,17 +121,5 @@ define([
         this.decorator.disableTooltip();
     };
 
-    /* * * * * * * * ADD BUTTON * * * * * * * */
-    // Check if there is a subsequent node
-    // TODO
-
-    // Check if this node can be terminal
-    // TODO
-
-    // If it can't be terminal and it has no subsequent node, show add icon
-    // TODO
-
-    // Otherwise, show icon on mouseover (if it can have a successor)
-    // TODO
     return DAGItem;
 });
