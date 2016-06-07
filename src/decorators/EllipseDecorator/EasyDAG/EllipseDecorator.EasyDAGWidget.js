@@ -1,4 +1,4 @@
-/*globals define, _, $*/
+/*globals define, _ */
 /*jshint browser: true, camelcase: false*/
 
 /**
@@ -9,14 +9,16 @@ define([
     'js/Constants',
     'js/NodePropertyNames',
     'widgets/EasyDAG/EasyDAGWidget.DecoratorBase',
-    './Attribute',
+    './AttributeField',
+    './PointerField',
     'css!./EllipseDecorator.EasyDAGWidget.css',
     'd3'
 ], function (
     CONSTANTS,
     nodePropertyNames,
     DecoratorBase,
-    AttributeField
+    AttributeField,
+    PointerField
 ) {
 
     'use strict';
@@ -28,10 +30,17 @@ define([
     EllipseDecorator = function (options) {
         var opts = _.extend({}, options);
 
+        this.client = WebGMEGlobal.Client;
         this._node = opts.node;
-        this.attributeFields = [];
+        this.fields = [];
         this.nameWidth = null;
         this.fieldsWidth = null;
+
+        // Pointers
+        this.pointers = {};
+        this.pointersByTgt = {};
+        this.nameFor = {};
+
         this.skipAttributes = this.skipAttributes || options.skipAttributes ||
             {name: true};
         this.setAttributes();
@@ -66,8 +75,14 @@ define([
         this.logger.debug('EllipseDecorator ctor'); 
     };
 
+    // Pointer support
+    //   - Get all pointer paths of the given node
+    //   - For each path, add a territory rule
+    //   - onLoad, set the name for the given pointer field
+
     _.extend(EllipseDecorator.prototype, DecoratorBase.prototype);
 
+    EllipseDecorator.prototype.AttributeField = AttributeField;
     EllipseDecorator.prototype.initialize = function() {
         this.width = this.dense.width;
         this.height = this.dense.height;
@@ -89,25 +104,75 @@ define([
             .attr('fill', '#222222');
     };
 
+    EllipseDecorator.prototype.updateTerritory = function() {
+        var ids = this.ptrNames
+            .map(ptr => this._node.pointers[ptr])
+            .filter(id => id);;
+
+        if (this._territoryId) {
+            this.client.removeUI(this._territoryId);
+        }
+
+        this._territoryId = this.client.addUI(this, this._eventCallback.bind(this));
+        this._territory = {};
+        ids.forEach(id => this._territory[id] = {children: 0});
+        this.client.updateTerritory(this._territoryId, this._territory);
+    };
+
+    EllipseDecorator.prototype._eventCallback = function(events) {
+        // Update the names of all the pointers
+        // Load => set the new name
+        // unLoad => set the new name
+        // TODO
+        var node,
+            id;
+
+        for (var i = events.length; i--;) {
+            switch(events[i].etype) {
+                case CONSTANTS.TERRITORY_EVENT_LOAD:
+                case CONSTANTS.TERRITORY_EVENT_UPDATE:
+                    id = events[i].eid;
+                    node = this.client.getNode(id);
+                    this.updateTargetName(id, node.getAttribute('name'));
+                    break;
+
+                case CONSTANTS.TERRITORY_EVENT_UNLOAD:
+                    // Set name to null
+                    this.updateTargetName(events[i].eid, null);
+                break;
+            }
+        }
+    };
+
+    EllipseDecorator.prototype.updateTargetName = function(id, name) {
+        this.nameFor[id] = name;
+        if (this.pointersByTgt[id]) {
+            this.pointersByTgt[id].forEach(field => field.setValue(name));
+        }
+    };
+
     EllipseDecorator.prototype.expand = function() {
         var height,
             width,
             rx,
             attrNames = Object.keys(this._attributes),
-            attrField,
+            field,
             attr,
+            ptr,
             path,
             textHeight = 15,
 
             // Attributes
             initialY = 25,
-            y = 5;
+            nameCount = (this.ptrNames.length + attrNames.length),
+            y = 5,
+            i;
 
         // Only expand if the node has attributes to show
-        if (attrNames.length > 0) {
+        if (nameCount > 0) {
 
             // Get the height from the number of attributes
-            height = y + this.dense.height + textHeight*attrNames.length;
+            height = y + this.dense.height + textHeight*nameCount;
             width = Math.max(
                 this.nameWidth + 2 * NAME_MARGIN,
                 this.size.width,
@@ -134,20 +199,46 @@ define([
             this.$attributes.remove();
             this.$attributes = this.$el.append('g')
                 .attr('fill', '#222222');
-            for (var i = attrNames.length; i--;) {
-                // Create two text boxes (2nd is editable)
+
+            for (i = attrNames.length; i--;) {
+                // Create attribute field
                 y += textHeight;
                 attr = this._attributes[attrNames[i]];
-                attrField = new AttributeField(
+                field = new AttributeField(
                     this.logger,
                     this.$attributes,
                     attr,
                     y,
                     width
                 );
-                this.attributeFields.push(attrField);
-                attrField.saveAttribute = this.saveAttribute.bind(this, attrNames[i]);
+                field.saveAttribute = this.saveAttribute.bind(this, attrNames[i]);
+                this.fields.push(field);
             }
+
+            // Add the pointer fields
+            for (i = this.ptrNames.length; i--;) {
+                y += textHeight;
+                ptr = this._node.pointers[this.ptrNames[i]];
+                field = new PointerField(
+                    this.$attributes,
+                    this.ptrNames[i],
+                    this.nameFor[ptr] || ptr,
+                    width,
+                    y
+                );
+                // add event handlers
+                field.savePointer = this.savePointer.bind(this, this.ptrNames[i]);
+                field.selectTargetFor = this.selectTargetFor.bind(this, this.ptrNames[i]);
+                this.pointers[this.ptrNames[i]] = field;
+
+                if (!this.pointersByTgt[ptr]) {
+                    this.pointersByTgt[ptr] = [];
+                }
+                this.pointersByTgt[ptr].push(field);
+
+                this.fields.push(field);
+            }
+
 
             // Update width, height
             this.height = height;
@@ -180,7 +271,7 @@ define([
             .attr('d', path);
 
         // Clear the attributes
-        this.attributeFields.forEach(field => field.destroy());
+        this.fields.forEach(field => field.destroy());
         this.$attributes.remove();
         this.$attributes = this.$el.append('g')
             .attr('fill', '#222222');
@@ -229,6 +320,10 @@ define([
             this.color = this._node.color || this.color;
         }
         this.fieldsWidth = null;
+
+        // Update pointers
+        this.ptrNames = this._node.pointers ? Object.keys(this._node.pointers) : [];
+        this.updateTerritory();
     };
 
     // Reads the name width if it is currently unknown
@@ -247,15 +342,14 @@ define([
     EllipseDecorator.prototype.updateExpandedWidth = function() {
         if (!this.fieldsWidth && this.expanded) {
             this.fieldsWidth = Math.max.apply(null,
-                this.attributeFields.map(field => field.width())
+                this.fields.map(field => field.width())
             );
             this.expand();
         }
     };
 
     EllipseDecorator.prototype.render = function() {
-        this.$body
-            .transition()
+        var transition = this.$body.transition()
             .delay(200)
             .attr('opacity', 1)
             .attr('stroke', this.color)
@@ -267,7 +361,13 @@ define([
             .delay(200)
             .attr('opacity', 1);
 
-        this.attributeFields.forEach(field => field.render());
+        if (this.expanded) {
+            transition.each('end', () =>
+                this.fields.forEach(field => field.render()));
+        } else {
+            this.fields.forEach(field => field.render());
+        }
+
         this.updateDenseWidth();
         this.updateExpandedWidth();
     };
@@ -284,10 +384,27 @@ define([
     };
 
     EllipseDecorator.prototype.destroy = function() {
-        this.attributeFields.forEach(field => field.destroy());
+        this.fields.forEach(field => field.destroy());
+
+        if (this._territoryId) {
+            this.client.removeUI(this._territoryId);
+        }
+
     };
 
     EllipseDecorator.prototype.DECORATORID = DECORATOR_ID;
+
+    ///////////////// Pointer Support /////////////////
+
+    EllipseDecorator.prototype.savePointer = function(name, to) {
+        var msg = `Set ref "${name}" of "${this.name}" to "${to}"`;
+        if (to === null) {  // delete pointer!
+            this.client.delPointer(this._node.id, name,
+                `Clearing ptr "${name}" of "${this.name}"`);
+        } else {
+            this.client.makePointer(this._node.id, name, to, msg);
+        }
+    };
 
     return EllipseDecorator;
 });

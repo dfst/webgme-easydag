@@ -150,6 +150,10 @@ define([
             ItemClass = this.ItemClass;
 
         ItemClass.prototype.onUpdate = this.refreshUI.bind(this);
+        ItemClass.prototype.selectTargetFor = function(itemId, ptr) {
+            self.selectTargetFor(itemId, ptr);
+        };
+
         ItemClass.prototype.saveAttribute = function(attr, value) {
             self.saveAttributeForNode(this.id, attr, value);
         };

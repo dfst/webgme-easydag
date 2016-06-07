@@ -1,7 +1,9 @@
 /*globals define*/
 define([
+    'js/Constants',
     './AttributeValidators'
 ], function(
+    CONSTANTS,
     VALIDATORS
 ) {
     'use strict';
@@ -22,6 +24,7 @@ define([
         this._widget.deleteNode = this._deleteNode.bind(this);
         this._widget.removeSubtreeAt = this._removeSubtreeAt.bind(this);
         this._widget.isValidTerminalNode = this._isValidTerminalNode.bind(this);
+        this._widget.getValidTargetsFor = this._getValidTargetsFor.bind(this);
 
         // Decorator callbacks
         this._widget.setPointerForNode = this._setPointerForNode.bind(this);
@@ -259,7 +262,6 @@ define([
             nodeIds = [nodeId],
             next;
 
-        //results[nodeId] = true;
         while (nodeIds.length) {
             next = [];
             for (var i = nodeIds.length; i--;) {
@@ -371,6 +373,35 @@ define([
     EasyDAGControlEventHandlers.prototype._isValidTerminalNode = function(nodeId) {
         // Check if the node can have outgoing connections
         return this._getValidSuccessorNodes(nodeId).length === 0;
+    };
+
+    EasyDAGControlEventHandlers.prototype._getTargetDirs = function(/*typeIds*/) {
+        return [CONSTANTS.PROJECT_ROOT_ID];
+    };
+
+    EasyDAGControlEventHandlers.prototype._getValidTargetsFor = function(id, ptr) {
+        var typeIds = this._client.getPointerMeta(id, ptr).items.map(item => item.id),
+            dirs = this._getTargetDirs(typeIds),
+            items,
+            validTargets = [];
+
+        items = dirs.map(dir => this._client.getNode(dir).getChildrenIds())
+            .reduce((l1, l2) => l1.concat(l2));
+
+        for (var i = items.length; i--;) {
+            for (var t = typeIds.length; t--;) {
+                if (this._client.isTypeOf(items[i], typeIds[t])) {
+                    validTargets.push(items[i]);
+                    break;
+                }
+            }
+        }
+
+        return validTargets.map(id => {
+            return {
+                node: this._getObjectDescriptor(id)
+            };
+        });
     };
 
     return EasyDAGControlEventHandlers;
