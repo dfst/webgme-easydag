@@ -18,7 +18,7 @@ define([
     };
 
     PointerField.prototype.onClick = function() {
-        this.selectTargetFor(this.name);
+        this.selectTarget();
     };
 
     PointerField.prototype.render = function() {

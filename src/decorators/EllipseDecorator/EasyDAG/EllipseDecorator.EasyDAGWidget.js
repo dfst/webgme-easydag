@@ -1,4 +1,4 @@
-/*globals define, _ */
+/*globals define, _, WebGMEGlobal */
 /*jshint browser: true, camelcase: false*/
 
 /**
@@ -105,9 +105,18 @@ define([
     };
 
     EllipseDecorator.prototype.updateTerritory = function() {
-        var ids = this.ptrNames
+        var ids,
+            types;
+
+        types = this.ptrNames
+            .map(ptr =>  this.client.getPointerMeta(this._node.id, ptr))
+            .filter(meta => meta)
+            .map(meta => meta.items.map(item => item.id))
+            .reduce((l1, l2) => l1.concat(l2), []);
+
+        ids = this.ptrNames
             .map(ptr => this._node.pointers[ptr])
-            .filter(id => id);;
+            .filter(id => id).concat(types);
 
         if (this._territoryId) {
             this.client.removeUI(this._territoryId);
@@ -123,22 +132,21 @@ define([
         // Update the names of all the pointers
         // Load => set the new name
         // unLoad => set the new name
-        // TODO
         var node,
             id;
 
         for (var i = events.length; i--;) {
             switch(events[i].etype) {
-                case CONSTANTS.TERRITORY_EVENT_LOAD:
-                case CONSTANTS.TERRITORY_EVENT_UPDATE:
-                    id = events[i].eid;
-                    node = this.client.getNode(id);
-                    this.updateTargetName(id, node.getAttribute('name'));
-                    break;
+            case CONSTANTS.TERRITORY_EVENT_LOAD:
+            case CONSTANTS.TERRITORY_EVENT_UPDATE:
+                id = events[i].eid;
+                node = this.client.getNode(id);
+                this.updateTargetName(id, node.getAttribute('name'));
+                break;
 
-                case CONSTANTS.TERRITORY_EVENT_UNLOAD:
-                    // Set name to null
-                    this.updateTargetName(events[i].eid, null);
+            case CONSTANTS.TERRITORY_EVENT_UNLOAD:
+                // Set name to null
+                this.updateTargetName(events[i].eid, null);
                 break;
             }
         }
@@ -228,7 +236,7 @@ define([
                 );
                 // add event handlers
                 field.savePointer = this.savePointer.bind(this, this.ptrNames[i]);
-                field.selectTargetFor = this.selectTargetFor.bind(this, this.ptrNames[i]);
+                field.selectTarget = this.selectTargetFor.bind(this, this.ptrNames[i]);
                 this.pointers[this.ptrNames[i]] = field;
 
                 if (!this.pointersByTgt[ptr]) {
@@ -404,6 +412,11 @@ define([
         } else {
             this.client.makePointer(this._node.id, name, to, msg);
         }
+    };
+
+    EllipseDecorator.prototype.getTargetFilterFn = function() {
+        // Override in subclasses
+        return null;
     };
 
     return EllipseDecorator;

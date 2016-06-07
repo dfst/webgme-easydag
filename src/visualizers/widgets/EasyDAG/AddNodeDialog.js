@@ -72,5 +72,21 @@ define([
         this.svg.attr('height', this.decorator.height);
     };
 
+    AddNodeDialog.prompt = function(nodes, callback) {
+        // If only one, don't prompt
+        if (nodes.length > 1) {
+            // Create the modal view with all possible subsequent nodes
+            var dialog = new AddNodeDialog();
+            dialog.show(null, nodes);
+            dialog.onSelect = pair => {
+                if (pair) {
+                    callback(pair);
+                }
+            };
+        } else if (nodes[0]) {
+            callback(nodes[0]);
+        }
+    };
+
     return AddNodeDialog;
 });
