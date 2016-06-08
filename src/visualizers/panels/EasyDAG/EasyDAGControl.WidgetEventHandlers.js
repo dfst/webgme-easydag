@@ -379,7 +379,7 @@ define([
         return [CONSTANTS.PROJECT_ROOT_ID];
     };
 
-    EasyDAGControlEventHandlers.prototype._getValidTargetsFor = function(id, ptr) {
+    EasyDAGControlEventHandlers.prototype._getValidTargetsFor = function(id, ptr, filter) {
         var typeIds = this._client.getPointerMeta(id, ptr).items.map(item => item.id),
             dirs = this._getTargetDirs(typeIds),
             items,
@@ -395,6 +395,10 @@ define([
                     break;
                 }
             }
+        }
+
+        if (typeof filter === 'function') {
+            validTargets = validTargets.filter(filter);
         }
 
         return validTargets.map(id => {

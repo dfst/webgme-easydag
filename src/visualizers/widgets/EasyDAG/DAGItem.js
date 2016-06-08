@@ -55,7 +55,8 @@ define([
         };
 
         this.decorator.selectTargetFor = ptr => {
-            return this.selectTargetFor(this.id, ptr);
+            var filter = this.decorator.getTargetFilterFnFor(ptr);
+            return this.selectTargetFor(this.id, ptr, filter);
         };
     };
 

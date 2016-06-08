@@ -14,7 +14,7 @@ define([
             return {node};
         });
                 
-        this.promptNodeSelect(initialNodes, selected => {
+        AddNodeDialog.prompt(initialNodes, selected => {
             this.createNode(selected.node.id);
         });
     };
@@ -22,34 +22,23 @@ define([
     EasyDAGWidgetActions.prototype.onAddButtonClicked = function(item) {
         var successorPairs = this.getValidSuccessorNodes(item.id);
 
-        this.promptNodeSelect(successorPairs, node => {
+        AddNodeDialog.prompt(successorPairs, node => {
             this.onAddItemSelected(item, node);
         });
     };
 
-    EasyDAGWidgetActions.prototype.promptNodeSelect = function(nodes, callback) {
-        // If only one, don't prompt
-        if (nodes.length > 1) {
-            // Create the modal view with all possible subsequent nodes
-            var dialog = new AddNodeDialog();
-            dialog.show(null, nodes);
-            dialog.onSelect = pair => {
-                if (pair) {
-                    callback(pair);
-                }
-            };
-        } else if (nodes[0]) {
-            callback(nodes[0]);
-        }
-    };
-
-    EasyDAGWidgetActions.prototype.selectTargetFor = function(itemId, ptr) {
+    EasyDAGWidgetActions.prototype.selectTargetFor = function(itemId, ptr, filter) {
         // Get valid targets for itemId, ptr
-        var validTargets = this.getValidTargetsFor(itemId, ptr);
+        var validTargets = this.getValidTargetsFor(itemId, ptr, filter);
 
         // Show them to the user
-        this.promptNodeSelect(validTargets, selected => {
-            this.setPointerForNode(itemId, ptr, selected.node.id);
+        AddNodeDialog.prompt(validTargets, selected => {
+            var item = this.items[itemId];
+            if (item.decorator.savePointer) {
+                return item.decorator.savePointer(ptr, selected.node.id);
+            } else {
+                this.setPointerForNode(itemId, ptr, selected.node.id);
+            }
         });
     };
 

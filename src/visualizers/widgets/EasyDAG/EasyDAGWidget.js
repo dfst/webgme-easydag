@@ -150,8 +150,8 @@ define([
             ItemClass = this.ItemClass;
 
         ItemClass.prototype.onUpdate = this.refreshUI.bind(this);
-        ItemClass.prototype.selectTargetFor = function(itemId, ptr) {
-            self.selectTargetFor(itemId, ptr);
+        ItemClass.prototype.selectTargetFor = function(itemId, ptr, filter) {
+            self.selectTargetFor(itemId, ptr, filter);
         };
 
         ItemClass.prototype.saveAttribute = function(attr, value) {
