@@ -161,6 +161,7 @@ define([
     return {
         Add: Add,
         Delete: DeleteBtn,
+        ButtonBase: ButtonBase,  // For extension in subclasses
         DeleteOne: DeleteOne
     };
 });
