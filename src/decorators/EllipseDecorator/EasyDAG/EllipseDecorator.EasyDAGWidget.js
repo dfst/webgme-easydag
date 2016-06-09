@@ -414,7 +414,7 @@ define([
         }
     };
 
-    EllipseDecorator.prototype.getTargetFilterFn = function() {
+    EllipseDecorator.prototype.getTargetFilterFnFor = function() {
         // Override in subclasses
         return null;
     };
