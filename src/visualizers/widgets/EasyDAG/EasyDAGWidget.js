@@ -9,6 +9,7 @@ define([
     './lib/dagre.min',
     'common/util/assert',
     './EasyDAGWidget.Items',
+    './EasyDAGWidget.Zoom',
     './EasyDAGWidget.Actions',
     './EasyDAGWidget.Refresh',
     './EasyDAGWidget.Initial',
@@ -24,6 +25,7 @@ define([
     dagre,
     assert,
     EasyDAGWidgetItems,
+    EasyDAGWidgetZoom,
     EasyDAGWidgetActions,
     EasyDAGWidgetRefresher,
     EasyDAGWidgetInitial,
@@ -68,6 +70,7 @@ define([
 
         EasyDAGWidgetInitial.call(this);
         EasyDAGWidgetItems.call(this);
+        EasyDAGWidgetZoom.call(this);
         KeyBindings.call(this);
 
         // Selection manager
@@ -317,6 +320,7 @@ define([
         EasyDAGWidgetActions.prototype,
         EasyDAGWidgetRefresher.prototype,
         EasyDAGWidgetInitial.prototype,
+        EasyDAGWidgetZoom.prototype,
         KeyBindings.prototype
     );
 

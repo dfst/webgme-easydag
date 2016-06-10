@@ -76,7 +76,7 @@ define([
         this.onUpdate();
     };
 
-    DAGItem.prototype.redraw = function() {
+    DAGItem.prototype.redraw = function(zoom) {
         // Apply all the updates
         var left = this.x - this.width/2,
             top = this.y - this.height/2;
@@ -86,7 +86,7 @@ define([
             .transition()
             .attr('transform', `translate(${left}, ${top})`);
 
-        this.decorator.render();
+        this.decorator.render(zoom);
 
         // Draw the button
 

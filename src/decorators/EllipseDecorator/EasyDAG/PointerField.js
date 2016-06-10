@@ -23,7 +23,7 @@ define([
 
     PointerField.prototype.render = function() {
         if (this.hasIcon()) {
-            Field.prototype.render.call(this);
+            Field.prototype.render.apply(this, arguments);
             this.$icon.on('click', this.savePointer.bind(this, null));
         }
     };

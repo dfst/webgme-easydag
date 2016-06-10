@@ -347,16 +347,17 @@ define([
         }
     };
 
-    EllipseDecorator.prototype.updateExpandedWidth = function() {
+    EllipseDecorator.prototype.updateExpandedWidth = function(zoom) {
+        zoom = zoom || 1;
         if (!this.fieldsWidth && this.expanded) {
             this.fieldsWidth = Math.max.apply(null,
                 this.fields.map(field => field.width())
-            );
+            )/zoom;
             this.expand();
         }
     };
 
-    EllipseDecorator.prototype.render = function() {
+    EllipseDecorator.prototype.render = function(zoom) {
         var transition = this.$body.transition()
             .delay(200)
             .attr('opacity', 1)
@@ -371,13 +372,13 @@ define([
 
         if (this.expanded) {
             transition.each('end', () =>
-                this.fields.forEach(field => field.render()));
+                this.fields.forEach(field => field.render(zoom)));
         } else {
-            this.fields.forEach(field => field.render());
+            this.fields.forEach(field => field.render(zoom));
         }
 
         this.updateDenseWidth();
-        this.updateExpandedWidth();
+        this.updateExpandedWidth(zoom);
     };
 
     EllipseDecorator.prototype.update = function(node) {
