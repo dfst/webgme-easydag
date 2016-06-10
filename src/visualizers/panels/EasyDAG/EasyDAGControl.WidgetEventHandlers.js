@@ -186,7 +186,8 @@ define([
     };
 
     EasyDAGControlEventHandlers.prototype._getAllValidChildren = function(nodeId) {
-        return this._client.getChildrenMeta(nodeId).items
+        var meta = this._client.getChildrenMeta(nodeId);
+        return !meta ? [] : meta.items
             // Get all descendents
             .map(info => this._getAllDescendentIds(info.id))
             .reduce((prev, curr) => prev.concat(curr));
