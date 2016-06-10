@@ -89,19 +89,25 @@ define([
         }
     };
 
-    Field.prototype.createIcon = function(glyphicon, container, url) {
+    Field.prototype.createIcon = function(glyphicon, opts) {
         var html = this.$content[0][0],
             position = html.getBoundingClientRect(),
             parentHtml = $('body'),
-            icon = $('<span/>');
+            icon = $('<span/>'),
+            container;
 
-        container = container || $('<div/>');
+        opts = opts || {};
+        container = opts.container || $('<div/>');
         container.css('top', position.top);
         container.css('left', position.right + 5);
         container.css('position', 'absolute');
         container.attr('id', 'download-file-icon');
-        if (url) {
-            container.attr('href', url);
+        if (opts.url) {
+            container.attr('href', opts.url);
+        }
+
+        if (opts.zoom) {
+            icon.css('zoom', (opts.zoom*100)+'%');
         }
 
         icon.attr('class', 'glyphicon ' + glyphicon);
@@ -112,11 +118,11 @@ define([
         return container;
     };
 
-    Field.prototype.render = function() {
+    Field.prototype.render = function(zoom) {
         if (this.$icon) {
             this.$icon.remove();
         }
-        this.createIcon('glyphicon-remove');
+        this.createIcon('glyphicon-remove', {zoom: zoom});
     };
 
     return Field;

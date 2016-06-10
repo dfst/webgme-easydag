@@ -68,23 +68,25 @@ define([
         // Redraw items
         nodeIds = Object.keys(this.items);
         for (var i = nodeIds.length; i--;) {
-            this.items[nodeIds[i]].redraw();
+            this.items[nodeIds[i]].redraw(this._zoomValue);
         }
 
     };
 
     EasyDAGWidgetRefresher.prototype.updateTranslation = function () {
-        var shift = {
-            x: this._getTranslation('x'),
-            y: this._getTranslation('y')
-        };
+        var zoom = this._zoomValue || 1,
+            shift = {
+                x: this._getTranslation('x'),
+                y: this._getTranslation('y')
+            };
 
         // Make sure it is shifted at least 20 px in each direction
         shift.x = Math.max(TOP_LEFT_MIN_MARGIN, shift.x);
         shift.y = Math.max(TOP_LEFT_MIN_MARGIN, shift.y);
 
+        // Divide actual width by zoom value
         this.$svg
-            .attr('transform', `translate(${shift.x},${shift.y})`);
+            .attr('transform', `translate(${shift.x},${shift.y}) scale(${zoom})`);
     };
 
     EasyDAGWidgetRefresher.prototype._getTranslation = function (axis) {
@@ -100,6 +102,7 @@ define([
 
     EasyDAGWidgetRefresher.prototype._getMaxAlongAxis = function (axis) {
         var self = this,
+            zoom = this._zoomValue || 1,
             axisSizeName = axis === 'x' ? 'width' : 'height',
             MARGIN = 25,
             nodes;
@@ -108,7 +111,7 @@ define([
             return self.graph.node(id);
         });
         return Math.max.apply(null, nodes.map(function(node) {
-            return node[axis] + node[axisSizeName] + MARGIN;
+            return node[axis] + zoom*node[axisSizeName] + MARGIN;
         }));
     };
 

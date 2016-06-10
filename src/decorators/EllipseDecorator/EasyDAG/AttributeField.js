@@ -51,11 +51,12 @@ define([
         }
     };
 
-    AttributeField.prototype._addDownloadLink = function(url) {
-        this.createIcon('glyphicon-download',
-            FILE_DOWNLOAD_ANCHOR.clone(),
-            url
-        );
+    AttributeField.prototype._addDownloadLink = function(url, zoom) {
+        this.createIcon('glyphicon-download', {
+            el: FILE_DOWNLOAD_ANCHOR.clone(),
+            zoom: zoom,
+            url: url
+        });
     };
 
     AttributeField.prototype._enableFileHandlers = function() {
@@ -153,10 +154,11 @@ define([
             values = this.attr.values;
 
         // Using a temp container for the editing
-        container.css('top', position.top);
-        container.css('left', position.left);
+        container.css('top', position.top/this._zoom);
+        container.css('left', position.left/this._zoom);
         container.css('position', 'absolute');
-        container.css('width', width);
+        container.css('width', width/this._zoom);
+        container.css('zoom', this._zoom);
         container.attr('id', 'CONTAINER-TMP');
 
         $(parentHtml).append(container);
@@ -177,7 +179,7 @@ define([
                 }
                 dropdown.appendChild(option);
             }
-            dropdown.style.width = (width + arrowMargin)+ 'px';
+            dropdown.style.width = (width/this._zoom + arrowMargin)+ 'px';
             container.append(dropdown);
             dropdown.focus();
             // on select
@@ -212,13 +214,14 @@ define([
         return this.attr.type === 'asset';
     };
 
-    AttributeField.prototype.render = function() {
+    AttributeField.prototype.render = function(zoom) {
+        this._zoom = zoom;
         if (this.isAsset() && this.attr.value) {
             var url = this._blobClient.getDownloadURL(this.attr.value);
             if (this.$icon) {
                 this.$icon.remove();
             }
-            this._addDownloadLink(url);
+            this._addDownloadLink(url, zoom);
         }
     };
 
