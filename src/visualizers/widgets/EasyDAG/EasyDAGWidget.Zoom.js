@@ -21,10 +21,9 @@ define([
 
         if (org && (org.ctrlKey || org.metaKey || org.altKey)) {
             this.updateZoom(org.wheelDelta*this.SCROLL_ZOOM_RATIO);
+            event.stopPropagation();
+            event.preventDefault();
         }
-
-        event.stopPropagation();
-        event.preventDefault();
     };
 
     EasyDAGZoom.prototype.updateZoom = function(delta) {
