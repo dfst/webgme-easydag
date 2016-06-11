@@ -235,9 +235,10 @@ define([
     };
 
     EasyDAGWidget.prototype._removeNode = function (gmeId) {
-        var desc = this.items[gmeId];
+        var item = this.items[gmeId];
         delete this.items[gmeId];
         delete this.successors[gmeId];
+        item.destroy();
         this.refreshUI();
     };
 
