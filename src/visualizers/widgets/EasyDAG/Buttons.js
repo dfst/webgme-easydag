@@ -1,3 +1,4 @@
+/* globals define, WebGMEGlobal*/
 // This contains all action buttons for this widget
 define([
     'underscore'
@@ -36,7 +37,7 @@ define([
                 this._onClick.bind(this.context, this.item));
         }
     };
-    ButtonBase.BTN_CLASS = 'basic'
+    ButtonBase.BTN_CLASS = 'basic';
     ButtonBase.prototype._render = function() {
         // TODO: Override this in the children
         console.warn('No button render info specified!');
@@ -99,6 +100,7 @@ define([
         this.onAddButtonClicked(item);
     };
 
+    ////////////////////////// Deletion //////////////////////////
     var DeleteBtn = function(params) {
         ButtonBase.call(this, params);
     };
@@ -158,10 +160,76 @@ define([
         this.selectionManager.deselect();
     };
 
+    // Enter node button
+    var drawSquare = function(svg, size) {
+        svg.append('line')
+            .attr('x1', -size)
+            .attr('x2', -size)
+            .attr('y1', -size)
+            .attr('y2', size);
+
+        svg.append('line')
+            .attr('x1', size)
+            .attr('x2', size)
+            .attr('y1', -size)
+            .attr('y2', size);
+
+        svg.append('line')
+            .attr('x1', size)
+            .attr('x2', -size)
+            .attr('y1', -size)
+            .attr('y2', -size);
+
+        svg.append('line')
+            .attr('x1', size)
+            .attr('x2', -size)
+            .attr('y1', size)
+            .attr('y2', size);
+
+    };
+
+    var Enter = function(params) {
+        ButtonBase.call(this, params);
+    };
+
+    Enter.SIZE = 10;
+    Enter.BORDER = 5;
+    Enter.prototype.BTN_CLASS = 'enter';
+    Enter.prototype = new ButtonBase();
+
+    Enter.prototype._render = function() {
+        var lineRadius = Enter.SIZE - Enter.BORDER,
+            btnColor = this.color || '#90caf9',
+            lineColor = this.lineColor || '#7986cb',
+            iconCntr;
+
+        if (this.disabled) {
+            btnColor = '#e0e0e0';
+            lineColor = '#9e9e9e';
+        }
+
+        this.$el
+            .append('circle')
+            .attr('r', Enter.SIZE)
+            .attr('fill', btnColor);
+
+        iconCntr = this.$el.append('g')
+                .attr('stroke-width', 2)
+                .attr('stroke', lineColor);
+
+        drawSquare(iconCntr, lineRadius);
+    };
+
+    Enter.prototype._onClick = function(item) {
+        // Change to the given node
+        WebGMEGlobal.State.registerActiveObject(item.id);
+    };
+
     return {
         Add: Add,
         Delete: DeleteBtn,
         ButtonBase: ButtonBase,  // For extension in subclasses
+        Enter: Enter,
         DeleteOne: DeleteOne
     };
 });
