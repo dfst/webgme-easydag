@@ -127,7 +127,7 @@ define([
             }
 
             // Add the attributes
-            nodeObj.getAttributeNames()
+            nodeObj.getValidAttributeNames()
                 .forEach((name) => {
                     var meta = this._client.getAttributeSchema(nodeId, name),
                         type;
@@ -144,7 +144,7 @@ define([
                 });
 
             // Add the pointers
-            nodeObj.getPointerNames()
+            nodeObj.getValidPointerNames()
                 .filter(name => name !== 'base')
                 .forEach(name => objDescriptor.pointers[name] = nodeObj.getPointerId(name));
 
