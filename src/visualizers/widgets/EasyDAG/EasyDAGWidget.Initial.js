@@ -8,11 +8,13 @@ define([], function() {
     };
 
     EasyDAGInitial.prototype.updateEmptyMsg = function() {
-        if (this._empty) {
-            this._renderEmpty();
-        } else if (this.$emptyMsg) {
+        if (this.$emptyMsg) {
             this.$emptyMsg.remove();
             this.$emptyMsg = null;
+        }
+
+        if (this._empty) {
+            this._renderEmpty();
         }
     };
 
