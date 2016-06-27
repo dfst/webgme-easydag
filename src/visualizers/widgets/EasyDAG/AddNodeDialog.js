@@ -11,8 +11,8 @@ define([
     var COL_CLASS = 'col-md-2 col-xs-4',
         ADD_NODE_CLASS = 'add-node';
 
-    var AddNodeDialog = function() {
-        this._template = _.template(AddNodeTemplate);
+    var AddNodeDialog = function(html) {
+        this._template = _.template(html || AddNodeTemplate);
         this._dialog = null;
     };
 

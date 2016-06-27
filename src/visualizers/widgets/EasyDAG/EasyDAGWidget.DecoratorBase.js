@@ -71,7 +71,6 @@ define([
 
     EasyDAGDecoratorBase.prototype.enableTooltip = function(content, style) {
         this.$tooltip = new Opentip(this.$el[0][0], {
-            //target: this.$el[0][0],
             tipJoint: 'left',
             style: style || 'standard'
         });

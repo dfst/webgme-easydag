@@ -167,28 +167,44 @@ define([
         var event;
 
         // Remove any events about the current node
-        events = events.filter(e => e.eid !== this._currentNodeId);
         this._logger.debug('_eventCallback \'' + i + '\' items');
 
         for (var i = 0; i < events.length; i++) {
             event = events[i];
             switch (event.etype) {
-                case CONSTANTS.TERRITORY_EVENT_LOAD:
+
+            case CONSTANTS.TERRITORY_EVENT_LOAD:
+                if (event.eid === this._currentNodeId) {
+                    this.onActiveNodeLoad(event.eid);
+                } else {
                     this._onLoad(event.eid);
-                    break;
-                case CONSTANTS.TERRITORY_EVENT_UPDATE:
+                }
+                break;
+            case CONSTANTS.TERRITORY_EVENT_UPDATE:
+                if (event.eid === this._currentNodeId) {
+                    this.onActiveNodeUpdate(event.eid);
+                } else {
                     this._onUpdate(event.eid);
-                    break;
-                case CONSTANTS.TERRITORY_EVENT_UNLOAD:
+                }
+                break;
+            case CONSTANTS.TERRITORY_EVENT_UNLOAD:
+                if (event.eid === this._currentNodeId) {
+                    this.onActiveNodeUnload(event.eid);
+                } else {
                     this._onUnload(event.eid);
-                    break;
-                default:
-                    break;
+                }
+                break;
+            default:
+                break;
             }
         }
 
         this._logger.debug('_eventCallback \'' + events.length + '\' items - DONE');
     };
+
+    EasyDAGControl.prototype.onActiveNodeLoad =
+    EasyDAGControl.prototype.onActiveNodeUnload =
+    EasyDAGControl.prototype.onActiveNodeUpdate = function () {};
 
     // PUBLIC METHODS
     EasyDAGControl.prototype._onLoad = function (gmeId) {
@@ -233,6 +249,9 @@ define([
     EasyDAGControl.prototype._detachClientEventListeners = function () {
         if (!this._embedded) {
             WebGMEGlobal.State.off('change:' + CONSTANTS.STATE_ACTIVE_OBJECT, this._stateActiveObjectChanged);
+        }
+        if (this._territoryId) {
+            this._client.removeUI(this._territoryId);
         }
     };
 
