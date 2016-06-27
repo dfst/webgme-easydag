@@ -1,11 +1,9 @@
 /*globals define, _*/
 
 define([
-    './lib/dagre.min',
-    'common/util/assert'
+    './lib/dagre.min'
 ], function(
-    dagre,
-    assert
+    dagre
 ) {
 
     'use strict';
@@ -38,7 +36,6 @@ define([
         //nodeIds.forEach(nodeId => {
             //this.graph.node(nodeId).updateDimensions();
         //});
-
     };
 
     EasyDAGWidgetRefresher.prototype.calculatePositions = function () {

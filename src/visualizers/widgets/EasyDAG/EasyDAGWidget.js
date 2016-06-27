@@ -235,6 +235,7 @@ define([
         }
         this.itemCount--;
         this._empty = this.itemCount === 0;
+        this.refreshUI();
     };
 
     EasyDAGWidget.prototype._removeNode = function (gmeId) {
@@ -242,7 +243,6 @@ define([
         delete this.items[gmeId];
         delete this.successors[gmeId];
         item.destroy();
-        this.refreshUI();
     };
 
     EasyDAGWidget.prototype._removeConnection = function (gmeId) {
@@ -264,7 +264,6 @@ define([
         // FIXME: Move this to the refresh mixin
         this.connections[gmeId].remove();
         delete this.connections[gmeId];
-        this.refreshUI();
     };
 
     EasyDAGWidget.prototype.updateNode = function (desc) {
