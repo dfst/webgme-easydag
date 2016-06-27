@@ -5,6 +5,24 @@
 .easy-dag {
   outline: none;
 
+  .item-icon {
+      fill: #90caf9;
+      .icon {
+          fill: #616161;
+      }
+      .icon.plus {
+          transform: scale(0.5 0.5);
+      }
+  }
+  svg {
+      overflow: visible;
+  }
+  .button {
+      .icon {
+          fill: #616161;
+      }
+  }
+
   .background-text {
     font-size: xx-large;
     color: '#9e9e9e';

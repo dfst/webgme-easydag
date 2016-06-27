@@ -1,6 +1,8 @@
 /* globals define */
 define([
+    './Icons'
 ], function(
+    Icons
 ) {
     'use strict';
     
@@ -8,6 +10,7 @@ define([
         this.id = desc.id;
         this.name = desc.name;
         this.desc = desc;
+        this.isConnection = false;
 
 
         this.$container = parentEl
@@ -28,12 +31,6 @@ define([
 
         // Set up decorator callbacks
         this.setupDecoratorCallbacks();
-
-        // REMOVE (used for tested)
-        //var r = Math.random();
-        //if (r < .3) this.error('erroring!')
-        //else if (r < .6) this.warn('this is a warning');
-
     };
 
     DAGItem.prototype.setupDecoratorCallbacks = function() {
@@ -88,8 +85,13 @@ define([
 
         this.decorator.render(zoom);
 
-        // Draw the button
-
+        // Correct the icon location
+        if (this.$icon) {
+            left = this.$iconPos[0]*this.width;
+            top = this.$iconPos[1]*this.height;
+            this.$icon
+                .attr('transform', `translate(${left}, ${top})`);
+        }
     };
 
     DAGItem.prototype.onSelect = function() {
@@ -102,6 +104,47 @@ define([
 
     DAGItem.prototype.destroy = function() {
         this.decorator.destroy();
+    };
+
+    /* * * * * * * * CONNECTION INDICATORS * * * * * * * */
+    DAGItem.prototype.showIcon = function(params) {
+        var x = params.x || 0,
+            y = params.y || 0,
+            iconClass = params.class || '',
+            icon = params.icon,
+            size = params.size || 20,
+            radius = size/2,
+            iconOpts = params.iconOpts || {};
+
+        this.$icon = this.$el.append('g')
+            .attr('class', `item-icon ${iconClass}`)
+            .attr('transform', `translate(${x*this.width}, ${y*this.height})`);
+
+        this.$icon.append('circle')
+            .attr('r', radius);
+
+        // Add the icon
+        if (icon) {
+            // I should move this into something that just creates icons/buttons
+            // Buttons is similar but not quite the same...
+            // It might be nice to have something like:
+            //     icons -> buttons -> <rest of easdag>
+            iconOpts.radius = radius;
+            Icons.addIcon(icon, this.$icon, iconOpts);
+        }
+        this.$iconPos = [x, y];
+        return this.$icon;
+    };
+
+    DAGItem.prototype._setIcon = function(icon) {
+        if (this.$icon) {
+        }
+    };
+
+    DAGItem.prototype.hideIcon = function() {
+        if (this.$icon) {
+            this.$icon.remove();
+        }
     };
 
     /* * * * * * * * ERRORS/WARNINGS * * * * * * * */

@@ -117,7 +117,7 @@ define([
             return self.graph.node(id);
         });
         return Math.max.apply(null, nodes.map(function(node) {
-            return node[axis] + zoom*node[axisSizeName];
+            return (node[axis] + zoom*node[axisSizeName]) || 0;
         }));
     };
 

@@ -18,11 +18,12 @@ define([
             .then(selected => this.createNode(selected.node.id));
     };
 
-    EasyDAGWidgetActions.prototype.onAddButtonClicked = function(item) {
-        var successorPairs = this.getValidSuccessorNodes(item.id);
+    EasyDAGWidgetActions.prototype.onAddButtonClicked = function(item, reverse) {
+        var successorPairs = !reverse ? this.getValidSuccessors(item.id) :
+            this.getValidPredecessors(item.id);
 
         AddNodeDialog.prompt(successorPairs)
-            .then(node => this.onAddItemSelected(item, node));
+            .then(node => this.onAddItemSelected(item, node, reverse));
     };
 
     EasyDAGWidgetActions.prototype.selectTargetFor = function(itemId, ptr, filter) {
@@ -41,8 +42,8 @@ define([
             });
     };
 
-    EasyDAGWidgetActions.prototype.onAddItemSelected = function(item, selected) {
-        this.createConnectedNode(item.id, selected.conn.id, selected.node.id);
+    EasyDAGWidgetActions.prototype.onAddItemSelected = function(item, selected, reverse) {
+        this.createConnectedNode(item.id, selected.conn.id, selected.node.id, reverse);
     };
 
     EasyDAGWidgetActions.prototype._getAddSuccessorTitle = function(item) {

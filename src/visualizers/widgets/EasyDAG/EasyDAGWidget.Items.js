@@ -13,24 +13,6 @@ define([
         this._buttons = [];
     };
 
-    EasyDAGWidgetItems.prototype.addItem = function(desc) {
-        // Change this to draw the decorator
-        // TODO
-        var item = this.$svg
-            .append('circle')
-            .attr('r', 50)
-            .attr('fill', '#2196f3')
-            .attr('cx', desc.x)
-            .attr('cy', desc.y);
-
-        this.items[desc.id] = item;
-    };
-
-    EasyDAGWidgetItems.prototype.updateItem = function(desc) {
-        // TODO
-        var item = this.items[desc.id];
-    };
-
     EasyDAGWidgetItems.prototype.moveItem = function(desc) {
         this.items[desc.id].transition()
             .duration(200)
@@ -66,7 +48,6 @@ define([
     EasyDAGWidgetItems.prototype._addCreateButton = function (id) {
         var item = this.items[id],
             padding = 5,
-            r = 20,
             btn;
 
         btn = new Buttons.Add({
