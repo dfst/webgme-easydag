@@ -11,7 +11,6 @@ define([
     'use strict';
 
     var COL_CLASS = 'col-md-2 col-xs-4',
-        ADD_NODE_CLASS = 'add-node',
         DEFAULT_OPTS = {
             cols: 6
         };
@@ -26,8 +25,7 @@ define([
         // Populate the template
         var containers = pairs.map(p => new Container(p)),
             container,
-            content,
-            row;
+            content;
 
         // Create the dialog and add the nodes
         content = this._template({
@@ -36,6 +34,7 @@ define([
         });
 
         this._dialog = $(content);
+        
         container = this._dialog.find('#node-container');
         if (this.opts.tabs) {
             this._addTabbed(container, containers);
@@ -97,6 +96,8 @@ define([
         this._dialog.on('shown.bs.modal', () =>
             containersByTab[this.opts.tabs[0]].forEach(cntr => cntr.updateSize())
         );
+
+        this._dialog.on('hidden.bs.modal', () => this._dialog.remove());
 
         this._dialog.on('shown.bs.tab', 'a[data-toggle="tab"]', (event) => {
             var tabName = event.target.getAttribute('href').substring(1);
