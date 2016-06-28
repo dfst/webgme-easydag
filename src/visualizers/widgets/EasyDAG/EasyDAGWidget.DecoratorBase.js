@@ -1,3 +1,4 @@
+/* globals define*/
 // This contains all the functionality required of decorators used in EasyDAG
 define([
     'js/Decorators/WidgetDecoratorBase',
@@ -9,13 +10,18 @@ define([
     'use strict';
     var nop = function() {};
     var EasyDAGDecoratorBase = function(params) {
+        var classes = 'centering-offset';
+
         this.width = this.width || 100;  // Override with width/height
         this.height = this.height || 100;
         DecoratorBase.call(this, params);
-        //this.$el = d3.select(document.createElement('g'));
         this.$parent = params.parentEl;
+
+        if (params.node.class) {
+            classes += ' ' + params.node.class;
+        }
         this.$el = this.$parent.append('g')
-            .attr('class', 'centering-offset');
+            .attr('class', classes);
 
         // highlighting
         this.$body = null;  // template used for the highlight
