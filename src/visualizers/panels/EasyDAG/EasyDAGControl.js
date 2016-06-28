@@ -250,9 +250,6 @@ define([
         if (!this._embedded) {
             WebGMEGlobal.State.off('change:' + CONSTANTS.STATE_ACTIVE_OBJECT, this._stateActiveObjectChanged);
         }
-        if (this._territoryId) {
-            this._client.removeUI(this._territoryId);
-        }
     };
 
     EasyDAGControl.prototype.onActivate = function () {
