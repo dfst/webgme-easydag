@@ -14,17 +14,15 @@ define([
             return {node};
         });
                 
-        AddNodeDialog.prompt(initialNodes, selected => {
-            this.createNode(selected.node.id);
-        });
+        AddNodeDialog.prompt(initialNodes)
+            .then(selected => this.createNode(selected.node.id));
     };
 
     EasyDAGWidgetActions.prototype.onAddButtonClicked = function(item) {
         var successorPairs = this.getValidSuccessorNodes(item.id);
 
-        AddNodeDialog.prompt(successorPairs, node => {
-            this.onAddItemSelected(item, node);
-        });
+        AddNodeDialog.prompt(successorPairs)
+            .then(node => this.onAddItemSelected(item, node));
     };
 
     EasyDAGWidgetActions.prototype.selectTargetFor = function(itemId, ptr, filter) {
@@ -32,14 +30,15 @@ define([
         var validTargets = this.getValidTargetsFor(itemId, ptr, filter);
 
         // Show them to the user
-        AddNodeDialog.prompt(validTargets, selected => {
-            var item = this.items[itemId];
-            if (item.decorator.savePointer) {
-                return item.decorator.savePointer(ptr, selected.node.id);
-            } else {
-                this.setPointerForNode(itemId, ptr, selected.node.id);
-            }
-        });
+        AddNodeDialog.prompt(validTargets)
+            .then(selected => {
+                var item = this.items[itemId];
+                if (item.decorator.savePointer) {
+                    return item.decorator.savePointer(ptr, selected.node.id);
+                } else {
+                    this.setPointerForNode(itemId, ptr, selected.node.id);
+                }
+            });
     };
 
     EasyDAGWidgetActions.prototype.onAddItemSelected = function(item, selected) {
