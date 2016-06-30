@@ -8,7 +8,9 @@ define([
 
     'use strict';
     
-    var TOP_LEFT_MIN_MARGIN = 20;
+    var TOP_LEFT_MIN_MARGIN = 20,
+        MARGIN = 25;
+
     var EasyDAGWidgetRefresher = function() {
     };
 
@@ -87,7 +89,7 @@ define([
     };
 
     EasyDAGWidgetRefresher.prototype._getTranslation = function (axis) {
-        var max = this._getMaxAlongAxis(axis),
+        var max = this.getMaxAlongAxis(axis) + MARGIN,
             axisSizeName = axis === 'x' ? 'width' : 'height',
             size,
             shift;
@@ -97,24 +99,25 @@ define([
         return shift < Infinity ? shift : 0;
     };
 
-    EasyDAGWidgetRefresher.prototype._getMaxAlongAxis = function (axis) {
+    EasyDAGWidgetRefresher.prototype._getMaxAlongAxis =
+    EasyDAGWidgetRefresher.prototype.getMaxAlongAxis = function (axis) {
         var self = this,
             zoom = this._zoomValue || 1,
             axisSizeName = axis === 'x' ? 'width' : 'height',
-            MARGIN = 25,
+            
             nodes;
 
         nodes = this.graph.nodes().map(function(id) {
             return self.graph.node(id);
         });
         return Math.max.apply(null, nodes.map(function(node) {
-            return node[axis] + zoom*node[axisSizeName] + MARGIN;
+            return node[axis] + zoom*node[axisSizeName];
         }));
     };
 
     EasyDAGWidgetRefresher.prototype.updateContainerWidth = function () {
-        this.width = Math.max(this.$el.width(), this._getMaxAlongAxis('x'));
-        this.height = Math.max(this.$el.height(), this._getMaxAlongAxis('y'));
+        this.width = Math.max(this.$el.width(), this.getMaxAlongAxis('x') + MARGIN);
+        this.height = Math.max(this.$el.height(), this.getMaxAlongAxis('y') + MARGIN);
 
         this._$svg.attr('width', this.width);
         this._$svg.attr('height', this.height);
