@@ -387,7 +387,7 @@ define([
             validTargets = [];
 
         items = dirs.map(dir => this._client.getNode(dir).getChildrenIds())
-            .reduce((l1, l2) => l1.concat(l2));
+            .reduce((l1, l2) => l1.concat(l2), []);
 
         for (var i = items.length; i--;) {
             for (var t = typeIds.length; t--;) {
