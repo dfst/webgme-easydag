@@ -87,6 +87,7 @@ define([
             .attr('transform', `translate(${left}, ${top})`);
 
         this.decorator.render(zoom);
+        this.decorator.updateHighlightShape();
 
         // Draw the button
 
