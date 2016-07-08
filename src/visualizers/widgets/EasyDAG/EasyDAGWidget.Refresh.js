@@ -23,21 +23,28 @@ define([
 
         // WRITE UPDATES
         // Update the locations of all the nodes
-        this.calculatePositions();
-        this.updateTranslation();
 
-        this.refreshItems();
-        this.refreshConnections();
-
-        this.selectionManager.redraw();
-        this.updateContainerWidth();
-        this.refreshExtras();
+        this.queueFns([
+            this.calculatePositions.bind(this),
+            this.updateTranslation.bind(this),
+            this.refreshItems.bind(this),
+            this.refreshConnections.bind(this),
+            this.selectionManager.redraw.bind(this.selectionManager),
+            this.updateContainerWidth.bind(this),
+            this.refreshExtras.bind(this)
+        ]);
 
         // READ UPDATES
         //nodeIds = Object.keys(this.items);
         //nodeIds.forEach(nodeId => {
             //this.graph.node(nodeId).updateDimensions();
         //});
+    };
+
+    EasyDAGWidgetRefresher.prototype.queueFns = function (fns) {
+        for (var i = 0; i < fns.length; i++) {
+            setTimeout(fns[i], 0);
+        }
     };
 
     EasyDAGWidgetRefresher.prototype.calculatePositions = function () {
@@ -104,7 +111,6 @@ define([
         var self = this,
             zoom = this._zoomValue || 1,
             axisSizeName = axis === 'x' ? 'width' : 'height',
-            
             nodes;
 
         nodes = this.graph.nodes().map(function(id) {
@@ -113,6 +119,16 @@ define([
         return Math.max.apply(null, nodes.map(function(node) {
             return node[axis] + zoom*node[axisSizeName];
         }));
+    };
+
+    EasyDAGWidgetRefresher.prototype._getMinAlongAxis = function (axis) {
+        var self = this,
+            nodes;
+
+        nodes = this.graph.nodes().map(function(id) {
+            return self.graph.node(id);
+        });
+        return Math.min.apply(null, nodes.map(node => node[axis]));
     };
 
     EasyDAGWidgetRefresher.prototype.updateContainerWidth = function () {
