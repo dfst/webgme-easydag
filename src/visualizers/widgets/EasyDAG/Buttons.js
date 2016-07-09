@@ -1,10 +1,10 @@
 /* globals define, WebGMEGlobal*/
 // This contains all action buttons for this widget
 define([
-    'text!./lib/open-iconic/chevron-bottom.svg',
+    './Icons',
     'underscore'
 ], function(
-    chevronBottom,
+    Icons,
     _
 ) {
     'use strict';
@@ -61,18 +61,17 @@ define([
     };
 
     Add.SIZE = 10;
-    Add.BORDER = 5;
+    Add.BORDER = 2;
     Add.prototype.BTN_CLASS = 'add';
     Add.prototype = new ButtonBase();
 
     Add.prototype._render = function() {
         var lineRadius = Add.SIZE - Add.BORDER,
-            btnColor = '#90caf9',
-            lineColor = '#7986cb';
+            btnColor = '#90caf9';
 
         if (this.disabled) {
+            this.$el.attr('class', 'disabled');
             btnColor = '#e0e0e0';
-            lineColor = '#9e9e9e';
         }
 
         this.$el
@@ -80,24 +79,7 @@ define([
             .attr('r', Add.SIZE)
             .attr('fill', btnColor);
 
-        this.$el
-            .append('line')
-                .attr('x1', 0)
-                .attr('x2', 0)
-                .attr('y1', -lineRadius)
-                .attr('y2', lineRadius)
-                .attr('stroke-width', 3)
-                .attr('stroke', lineColor);
-
-        this.$el
-            .append('line')
-                .attr('y1', 0)
-                .attr('y2', 0)
-                .attr('x1', -lineRadius)
-                .attr('x2', lineRadius)
-                .attr('stroke-width', 3)
-                .attr('stroke', lineColor);
-
+        Icons.addIcon(this.icon || 'plus', this.$el, {radius: lineRadius});
     };
 
     Add.prototype._onClick = function(item) {
@@ -112,9 +94,9 @@ define([
     DeleteBtn.prototype.BTN_CLASS = 'delete';
     DeleteBtn.prototype = new ButtonBase();
 
+    DeleteBtn.BORDER = 2;
     DeleteBtn.prototype._render = function() {
-        var lineRadius = Add.SIZE - Add.BORDER - 1,
-            lineWidth = 2.5,
+        var lineRadius = Add.SIZE - DeleteBtn.BORDER,
             btnColor = '#e57373',
             lineColor = '#616161';
 
@@ -128,24 +110,7 @@ define([
             .attr('r', Add.SIZE)
             .attr('fill', btnColor);
 
-        this.$el
-            .append('line')
-                .attr('x1', -lineRadius)
-                .attr('x2', lineRadius)
-                .attr('y1', -lineRadius)
-                .attr('y2', lineRadius)
-                .attr('stroke-width', lineWidth)
-                .attr('stroke', lineColor);
-
-        this.$el
-            .append('line')
-                .attr('x1', -lineRadius)
-                .attr('x2', lineRadius)
-                .attr('y1', lineRadius)
-                .attr('y2', -lineRadius)
-                .attr('stroke-width', lineWidth)
-                .attr('stroke', lineColor);
-
+        Icons.addIcon(this.icon || 'x', this.$el, {radius: lineRadius});
     };
 
     DeleteBtn.prototype._onClick = function(item) {
@@ -165,44 +130,15 @@ define([
     };
 
     // Enter node button
-    var drawSquare = function(svg, size) {
-        svg.append('line')
-            .attr('x1', -size)
-            .attr('x2', -size)
-            .attr('y1', -size)
-            .attr('y2', size);
-
-        svg.append('line')
-            .attr('x1', size)
-            .attr('x2', size)
-            .attr('y1', -size)
-            .attr('y2', size);
-
-        svg.append('line')
-            .attr('x1', size)
-            .attr('x2', -size)
-            .attr('y1', -size)
-            .attr('y2', -size);
-
-        svg.append('line')
-            .attr('x1', size)
-            .attr('x2', -size)
-            .attr('y1', size)
-            .attr('y2', size);
-
-    };
-
     var Enter = function(params) {
         ButtonBase.call(this, params);
     };
 
     Enter.SIZE = 10;
-    Enter.BORDER = 5;
+    Enter.BORDER = 2;
     Enter.prototype.BTN_CLASS = 'enter';
     Enter.prototype = new ButtonBase();
 
-    // I should probably add icons.
-    // TODO
     Enter.prototype._render = function() {
         var lineRadius = Enter.SIZE - Enter.BORDER,
             btnColor = this.color || '#90caf9',
@@ -219,11 +155,8 @@ define([
             .attr('r', Enter.SIZE)
             .attr('fill', btnColor);
 
-        iconCntr = this.$el.append('g')
-                .attr('stroke-width', 2)
-                .attr('stroke', lineColor);
-
-        drawSquare(iconCntr, lineRadius);
+        Icons.addIcon(this.icon || 'fullscreen-enter', this.$el,
+            {radius: lineRadius});
     };
 
     Enter.prototype._onClick = function(item) {
@@ -245,7 +178,7 @@ define([
     };
 
     Connect.SIZE = Enter.SIZE;
-    Connect.BORDER = 3;
+    Connect.BORDER = 2;
     Connect.From.prototype._render = function() {
         var lineRadius = Connect.SIZE - Connect.BORDER,
             btnColor = this.color || '#90caf9',
@@ -262,16 +195,8 @@ define([
             .attr('r', Connect.SIZE)
             .attr('fill', btnColor);
 
-        var icon = $(chevronBottom);
-
-        // Correct the size
-        icon.attr('class', 'icon')
-            .attr('x', -lineRadius)
-            .attr('y', -5.5)
-            .attr('width', 2*lineRadius)
-            .attr('height', 2*lineRadius);
-
-        this.$el[0][0].appendChild(icon[0]);
+        Icons.addIcon(this.icon || 'chevron-bottom', this.$el,
+            {radius: lineRadius});
     };
 
     Connect.To = function(params) {

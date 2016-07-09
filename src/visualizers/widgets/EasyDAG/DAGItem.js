@@ -115,6 +115,8 @@ define([
             icon = params.icon,
             size = params.size || 20,
             radius = size/2,
+            border = 2,
+            lineRadius = radius - border,
             iconOpts = params.iconOpts || {};
 
         this.$icon = this.$el.append('g')
@@ -130,7 +132,7 @@ define([
             // Buttons is similar but not quite the same...
             // It might be nice to have something like:
             //     icons -> buttons -> <rest of easdag>
-            iconOpts.radius = radius;
+            iconOpts.radius = lineRadius;
             Icons.addIcon(icon, this.$icon, iconOpts);
         }
         this.$iconPos = [x, y];
