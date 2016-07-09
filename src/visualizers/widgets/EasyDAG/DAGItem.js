@@ -84,6 +84,7 @@ define([
             .attr('transform', `translate(${left}, ${top})`);
 
         this.decorator.render(zoom);
+        this.decorator.updateHighlightShape();
 
         // Correct the icon location
         if (this.$icon) {

@@ -26,6 +26,7 @@ define([
         // highlighting
         this.$body = null;  // template used for the highlight
         this.$shape = null;
+        this._highlighted = false;
         this.$highlight = this.$el.append('g')
             .attr('class', 'highlight');
 
@@ -52,15 +53,13 @@ define([
     // Highlight support /////////////////////////////////
 
     EasyDAGDecoratorBase.prototype.highlight = function(color) {
+        this._highlighted = true;
         if (this.$body) {
             if (!this.$shape) {
                 // copy the $body
-                var body = this.$body[0][0].cloneNode();  // retrieve the node
-                this.$shape = body;
-                this.$highlight[0][0].appendChild(this.$shape);  // FIXME: This is ugly
+                this.updateHighlightShape();
             }
 
-            this.$shape.setAttribute('filter', 'url(#highlight)');
             this.$highlight
                 // change the color
                 .attr('fill', color || '#ff0000');
@@ -69,9 +68,24 @@ define([
         }
     };
 
+    EasyDAGDecoratorBase.prototype.updateHighlightShape = function() {
+        if (this.$shape) {
+            this.$shape.remove();
+        }
+
+        if (this._highlighted) {
+            var body = this.$body[0][0].cloneNode();  // retrieve the node
+            this.$shape = body;
+            this.$highlight[0][0].appendChild(this.$shape);  // FIXME: This is ugly
+            this.$shape.setAttribute('filter', 'url(#highlight)');
+        }
+    };
+
     EasyDAGDecoratorBase.prototype.unHighlight = function() {
+        this._highlighted = false;
         if (this.$shape) {
             this.$shape.removeAttribute('filter');
+            this.$shape.remove();
         }
     };
 
