@@ -1,9 +1,11 @@
 /*globals define*/
 define([
     'js/Constants',
+    'underscore',
     './AttributeValidators'
 ], function(
     CONSTANTS,
+    _,
     VALIDATORS
 ) {
     'use strict';
@@ -16,7 +18,6 @@ define([
     var EasyDAGControlEventHandlers = function() {};
 
     EasyDAGControlEventHandlers.prototype._initWidgetEventHandlers = function() {
-        this._widget.getValidSuccessorNodes = this._getValidSuccessorNodes.bind(this);
         this._widget.getValidInitialNodes = this._getValidInitialNodes.bind(this);
         this._widget.filterNodesForMove = this._filterNodesForMove.bind(this);
         this._widget.createConnectedNode = this._createConnectedNode.bind(this);
@@ -37,6 +38,14 @@ define([
         // Additional Helpers
         this._widget.undo = this._undo.bind(this);
         this._widget.redo = this._redo.bind(this);
+
+        // Connecting
+        this._widget.getValidSuccessorNodes =
+        this._widget.getValidSuccessors = this.getValidSuccessors.bind(this);
+        this._widget.getValidPredecessors = this.getValidPredecessors.bind(this);
+        this._widget.getValidExistingSuccessors = this.getValidExistingSuccessors.bind(this);
+        this._widget.getValidExistingPredecessors = this.getValidExistingPredecessors.bind(this);
+        this._widget.connectNodes = this._connectNodes.bind(this);
     };
 
     EasyDAGControlEventHandlers.prototype._undo = function() {
@@ -81,10 +90,11 @@ define([
         }
     };
 
-    EasyDAGControlEventHandlers.prototype._createConnectedNode = function(srcId, connBaseId, dstBaseId) {
+    EasyDAGControlEventHandlers.prototype._createConnectedNode = function(srcId, connBaseId, dstBaseId, reverse) {
         var dstId,
             connId,
-            parentId = this._currentNodeId;
+            parentId = this._currentNodeId,
+            tmp;
 
         this._client.startTransaction();
 
@@ -94,6 +104,12 @@ define([
         connId = this._client.createChild({parentId, baseId: connBaseId});
 
         // connect the connection to the node
+        if (reverse) {
+            tmp = srcId;
+            srcId = dstId;
+            dstId = tmp;
+        }
+
         this._client.makePointer(connId, CONN_PTR.START, srcId);
         this._client.makePointer(connId, CONN_PTR.END, dstId);
 
@@ -123,6 +139,22 @@ define([
 
         this._client.startTransaction(msg);
         this._client.delMoreNodes(nodeIds);
+        this._client.completeTransaction();
+    };
+
+    EasyDAGControlEventHandlers.prototype._connectNodes = function(src, dst, baseId) {
+        var srcName = this._client.getNode(src),
+            dstName = this._client.getNode(dst),
+            connId,
+            msg = `Connecting ${srcName} (${src}) -> ${dstName} (${dst})`;
+
+        this._client.startTransaction(msg);
+        connId = this._client.createChild({
+            parentId: this._currentNodeId,
+            baseId: baseId
+        });
+        this._client.makePointer(connId, CONN_PTR.START, src);
+        this._client.makePointer(connId, CONN_PTR.END, dst);
         this._client.completeTransaction();
     };
 
@@ -193,12 +225,123 @@ define([
             .reduce((prev, curr) => prev.concat(curr));
     };
 
+    /* * * * * * * * Connecting Node Handlers * * * * * * * */
     // Get the valid nodes that can follow the given node
+    EasyDAGControlEventHandlers.prototype.getValidExistingSuccessors = function(nodeId) {
+        return this.getValidExistingCessors(nodeId, false);
+    };
+
+    EasyDAGControlEventHandlers.prototype.getValidExistingPredecessors = function(nodeId) {
+        return this.getValidExistingCessors(nodeId, true);
+    };
+
+    EasyDAGControlEventHandlers.prototype.getValidExistingCessors = function(nodeId, reverse) {
+        var node = this._client.getNode(this._currentNodeId),
+            childrenIds = node.getChildrenIds(),
+            children = childrenIds.map(id => this._client.getNode(id)),
+            conns = children.filter(node => node.isConnection()),
+            ptrName = !reverse ? 'src' : 'dst',
+            otherPtr = !reverse ? 'dst' : 'src',
+            alreadyConnected = [],
+            nonCyclic,  // children that won't create a cycle
+            ptr;
+
+        if (reverse) {
+            nonCyclic = _.difference(childrenIds, this.getSuccessors(children, nodeId));
+        } else {
+            nonCyclic = _.difference(childrenIds, this.getPredecessors(children, nodeId));
+        }
+
+        // Remove nodes that are already connected
+        for (var i = conns.length; i--;) {
+            if (conns[i].getPointer(ptrName).to === nodeId) {
+                alreadyConnected.push(conns[i].getPointer(otherPtr).to);
+            }
+        }
+        nonCyclic = _.difference(nonCyclic, alreadyConnected);
+
+        // Remove children that can't be connected to
+        return this.getConnectableNodes(nodeId, nonCyclic, reverse);
+    };
+
+
+    EasyDAGControlEventHandlers.prototype.getConnectableNodes = function(src, dsts, reverse) {
+        var children = this._getAllValidChildren(this._currentNodeId),
+            connIds = [],
+            tgts = [],
+            validDsts,
+            typeId,
+            node,
+            i;
+
+        for (i = children.length; i--;) {
+            node = this._client.getNode(children[i]);
+            if (node.isConnection()) {
+
+                // If the conn can start at src, record it
+                if (this.connCanStartAt(src, children[i], reverse)) {
+                    connIds.push(children[i]);
+                }
+            }
+        }
+
+        // Store the valid target types for each connection
+        validDsts = this.getDstToConnId(connIds);
+        for (i = dsts.length; i--;) {
+            node = this._client.getNode(dsts[i]);
+            typeId = node.getMetaTypeId();
+            if (src !== dsts[i] && validDsts[typeId]) {
+                tgts.push({
+                    node: this._getObjectDescriptor(dsts[i]),
+                    conn: this._getObjectDescriptor(validDsts[typeId])
+                });
+            }
+        }
+
+        return tgts;
+    };
+
+    EasyDAGControlEventHandlers.prototype.connCanStartAt = function(src, connId, reverse) {
+        var ptr = !reverse ? CONN_PTR.START : CONN_PTR.END,
+            ancestors = this._getAncestorNodeIds(src);
+
+        return this._client.getPointerMeta(connId, ptr).items
+            .map(item => item.id)
+            .reduce((startsAtNode, id) => {
+                return startsAtNode || ancestors[id];
+            }, false);
+    };
+
+    EasyDAGControlEventHandlers.prototype.getDstToConnId = function(connIds) {
+        var dstDict = {},
+            descs,
+            items;
+
+        for (var i = connIds.length; i--;) {
+            items = this._client.getPointerMeta(connIds[i], CONN_PTR.END).items;
+            for (var j = items.length; j--;) {
+                // Get all descendents
+                descs = this._getAllDescendentIds(items[j].id);
+                dstDict[items[j].id] = connIds[i];
+                for (var k = descs.length; k--;) {
+                    dstDict[descs[k]] = connIds[i];
+                }
+            }
+        }
+        return dstDict;
+
+    };
+
+    EasyDAGControlEventHandlers.prototype.getValidPredecessors = function(nodeId) {
+        // Get a new node that could be created before the given node
+        // TODO
+    };
+
+    EasyDAGControlEventHandlers.prototype.getValidSuccessors =
     EasyDAGControlEventHandlers.prototype._getValidSuccessorNodes = function(nodeId) {
         // Get all connections that can be contained in the parent node
         var self = this,
             node = this._client.getNode(nodeId),
-            ancestors = this._getAncestorNodeIds(nodeId),
             dstIds,
             items,
             dstDict,
@@ -216,28 +359,10 @@ define([
             .filter(id => self._client.getNode(id).isConnection());
 
         // Get the connections that have this nodeId as a valid source
-        connIds = allConnIds.filter(connId => {
-            // Check if the connection can start at the given node
-            return self._client.getPointerMeta(connId, CONN_PTR.START).items
-                .map(item => item.id)
-                .reduce((startsAtNode, id) => {
-                    return startsAtNode || ancestors[id];
-                }, false);
-        });
+        connIds = allConnIds.filter(connId => this.connCanStartAt(nodeId, connId));
 
         // Get all (unique) valid destinations of these connections
-        dstDict = {};
-        for (var i = connIds.length; i--;) {
-            items = self._client.getPointerMeta(connIds[i], CONN_PTR.END).items;
-            for (var j = items.length; j--;) {
-                // Get all descendents
-                descs = this._getAllDescendentIds(items[j].id);
-                dstDict[items[j].id] = connIds[i];
-                for (var k = descs.length; k--;) {
-                    dstDict[descs[k]] = connIds[i];
-                }
-            }
-        }
+        dstDict = this.getDstToConnId(connIds);
 
         // Remove all possibilities that cannot be contained in the parent
         dstIds = Object.keys(dstDict)
@@ -256,6 +381,8 @@ define([
             };
         });
     };
+
+    /* * * * * * * * Connecting Node Handlers END * * * * * * * */
 
     EasyDAGControlEventHandlers.prototype._getAllDescendentIds = function(nodeId) {
         var metaNodes = this._client.getAllMetaNodes(),
@@ -288,7 +415,7 @@ define([
         while (nodeId) {
             ancestors[nodeId] = true;
             node = this._client.getNode(nodeId);
-            nodeId = node.getBaseId();
+            nodeId = node && node.getBaseId();
         }
         return ancestors;
     };
@@ -366,14 +493,14 @@ define([
 
         // Return the nodeId, connectionIds and the subtrees at the dstIds
         connIds.push(nodeId);
-        return connIds
+        return _.uniq(connIds
             .concat(dstIds.map(getMoreCessors)
-            .reduce((l1, l2) => l1.concat(l2), []));
+            .reduce((l1, l2) => l1.concat(l2), [])));
     };
 
     EasyDAGControlEventHandlers.prototype._isValidTerminalNode = function(nodeId) {
         // Check if the node can have outgoing connections
-        return this._getValidSuccessorNodes(nodeId).length === 0;
+        return this.getValidSuccessors(nodeId).length === 0;
     };
 
     EasyDAGControlEventHandlers.prototype._getTargetDirs = function(/*typeIds*/) {

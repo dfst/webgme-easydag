@@ -1,3 +1,4 @@
+/*globals define*/
 define([
     './Buttons',
     'd3'
@@ -7,11 +8,7 @@ define([
     'use strict';
     
     var MARGIN = 10,
-        DOTTED_COLOR = '#0099ff',
-        BUTTON_SIZE = 20,
-        BUTTON_COLOR = '#aeaeae',
-        BUTTON_COLOR_INACTIVE = '#333333',  // TODO: on mouse over
-        nop = function(){};
+        DOTTED_COLOR = '#0099ff';
 
     var SelectionManager = function(widget) {
         this._widget = widget;  // This is used for the action callbacks
@@ -87,22 +84,22 @@ define([
     };
 
     SelectionManager.prototype.select = function(item) {
-        var x,
-            y;
-
         if (item !== this.selectedItem) {
             this.deselect();
             this.selectedItem = item;
             item.onSelect();
         }
+        this._widget.onSelect(item);
     };
 
     SelectionManager.prototype.deselect = function() {
+        var item = this.selectedItem;
         if (this.selectedItem) {
             this.selectedItem.onDeselect();
             this.selectedItem = null;
         }
         this._deselect();
+        this._widget.onDeselect(item);
     };
 
     SelectionManager.prototype._deselect = function() {
@@ -117,15 +114,19 @@ define([
         var item = this.selectedItem,
             left,
             top,
+            itemWidth,
+            itemHeight,
             width,
             height;
 
         this._deselect();
         if (item) {
-            left = item.x - item.width/2 - MARGIN;
-            top = item.y - (item.height/2) - MARGIN;
-            width = item.width + 2*MARGIN;
-            height = item.height + 2*MARGIN;
+            itemWidth = item.width || item.getWidth();
+            itemHeight = item.height || item.getHeight();
+            left = item.x - itemWidth/2 - MARGIN;
+            top = item.y - itemHeight/2 - MARGIN;
+            width = itemWidth + 2*MARGIN;
+            height = itemHeight + 2*MARGIN;
 
             this.$selection = this.$el
                 .append('g')
@@ -147,27 +148,33 @@ define([
 
     SelectionManager.prototype.createActionButtons = function(width, height) {
         // Check if the selected item can have successors
-        var successorNodes,
-            cx = width/2,
+        var cx = width/2,
             btn;
 
-        successorNodes = this._widget.getValidSuccessorNodes(this.selectedItem.id);
+        if (!this.selectedItem.isConnection) {
+            btn = new Buttons.Connect.From({
+                context: this._widget,
+                $pEl: this.$selection,
+                item: this.selectedItem,
+                x: cx,
+                y: height
+            });
 
-        btn = new Buttons.Add({
-            context: this._widget,
-            $pEl: this.$selection,
-            item: this.selectedItem,
-            x: cx,
-            y: height,
-            disabled: successorNodes.length === 0
-        });
+            btn = new Buttons.Connect.To({
+                context: this._widget,
+                $pEl: this.$selection,
+                item: this.selectedItem,
+                x: cx,
+                y: 0
+            });
+        }
 
         // Remove button
-        btn = new Buttons.Delete({
+        btn = new Buttons.DeleteOne({
             context: this._widget,
             $pEl: this.$selection,
             item: this.selectedItem,
-            x: cx,
+            x: 0,
             y: 0
         });
     };

@@ -1,8 +1,10 @@
 /* globals define, WebGMEGlobal*/
 // This contains all action buttons for this widget
 define([
+    'text!./lib/open-iconic/chevron-bottom.svg',
     'underscore'
 ], function(
+    chevronBottom,
     _
 ) {
     'use strict';
@@ -18,9 +20,11 @@ define([
         this.x = params.x;
         this.y = params.y;
         this.disabled = !!params.disabled;
+        this.icon = params.icon;
+        this.class = params.class || this.BTN_CLASS;
 
         this.$el = params.$pEl.append('g')
-            .attr('class', 'button-' + this.BTN_CLASS)
+            .attr('class', 'button ' + this.class)
             .attr('transform', `translate(${this.x}, ${this.y})`);
 
         // Create the button
@@ -37,7 +41,7 @@ define([
                 this._onClick.bind(this.context, this.item));
         }
     };
-    ButtonBase.BTN_CLASS = 'basic';
+    ButtonBase.prototype.BTN_CLASS = 'basic';
     ButtonBase.prototype._render = function() {
         // TODO: Override this in the children
         console.warn('No button render info specified!');
@@ -197,6 +201,8 @@ define([
     Enter.prototype.BTN_CLASS = 'enter';
     Enter.prototype = new ButtonBase();
 
+    // I should probably add icons.
+    // TODO
     Enter.prototype._render = function() {
         var lineRadius = Enter.SIZE - Enter.BORDER,
             btnColor = this.color || '#90caf9',
@@ -225,11 +231,67 @@ define([
         WebGMEGlobal.State.registerActiveObject(item.id);
     };
 
+    // Connection buttons (incoming, outgoing)
+    var Connect = {};
+
+    Connect.From = function(params) {
+        params.class = params.class || 'connect';
+        ButtonBase.call(this, params);
+    };
+
+    Connect.From.prototype._onClick = function(item) {
+        // Create a connection from the current node to another
+        this.startConnectionFrom(item);
+    };
+
+    Connect.SIZE = Enter.SIZE;
+    Connect.BORDER = 3;
+    Connect.From.prototype._render = function() {
+        var lineRadius = Connect.SIZE - Connect.BORDER,
+            btnColor = this.color || '#90caf9',
+            lineColor = this.lineColor || '#7986cb',
+            iconCntr;
+
+        if (this.disabled) {
+            btnColor = '#e0e0e0';
+            lineColor = '#9e9e9e';
+        }
+
+        this.$el
+            .append('circle')
+            .attr('r', Connect.SIZE)
+            .attr('fill', btnColor);
+
+        var icon = $(chevronBottom);
+
+        // Correct the size
+        icon.attr('class', 'icon')
+            .attr('x', -lineRadius)
+            .attr('y', -5.5)
+            .attr('width', 2*lineRadius)
+            .attr('height', 2*lineRadius);
+
+        this.$el[0][0].appendChild(icon[0]);
+    };
+
+    Connect.To = function(params) {
+        params.class = params.class || 'connect';
+        ButtonBase.call(this, params);
+    };
+
+    Connect.To.prototype._onClick = function(item) {
+        // Create a connection from the current node to another
+        this.startConnectionTo(item);
+    };
+
+    Connect.To.prototype._render = Connect.From.prototype._render;
+
     return {
         Add: Add,
         Delete: DeleteBtn,
         ButtonBase: ButtonBase,  // For extension in subclasses
         Enter: Enter,
+        Connect: Connect,
         DeleteOne: DeleteOne
     };
 });
