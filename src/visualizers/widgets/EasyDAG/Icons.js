@@ -3,7 +3,7 @@ define([
 ) {
     // Special adjustments
     var yFor = {
-        'chevron-bottom': -5.5
+        'chevron-bottom': -4.5
     };
 
     var addIcon = function (icon, container, opts) {
