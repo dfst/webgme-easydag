@@ -241,7 +241,11 @@ define([
 
     Connect.From.prototype._onClick = function(item) {
         // Create a connection from the current node to another
-        this.startConnectionFrom(item);
+        if (d3.event.shiftKey) {
+            this.onAddButtonClicked(item);
+        } else {
+            this.startConnectionFrom(item);
+        }
     };
 
     Connect.SIZE = Enter.SIZE;
@@ -281,7 +285,11 @@ define([
 
     Connect.To.prototype._onClick = function(item) {
         // Create a connection from the current node to another
-        this.startConnectionTo(item);
+        if (d3.event.shiftKey) {
+            this.onAddButtonClicked(item, true);
+        } else {
+            this.startConnectionTo(item);
+        }
     };
 
     Connect.To.prototype._render = Connect.From.prototype._render;
