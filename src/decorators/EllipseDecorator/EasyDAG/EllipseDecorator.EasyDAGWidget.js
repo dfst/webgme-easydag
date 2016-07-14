@@ -84,7 +84,7 @@ define([
         this.height = this.dense.height;
 
         this.$body = this.$el
-            .append('path')
+            .append('rect')
             .attr('opacity', 0)
             .attr('class', 'layer-decorator');
 
@@ -213,7 +213,6 @@ define([
             width,
             rx,
             ptr,
-            path,
 
             // Attributes
             initialY = 25,
@@ -240,9 +239,13 @@ define([
 
             // Add the attribute fields
             y += initialY;
-            this.$attributes.remove();
+            this.clearFields();
             this.$attributes = this.$el.append('g')
                 .attr('fill', '#222222');
+
+            if (!isAnUpdate) {
+            this.$attributes.attr('opacity', 0);
+            }
 
             y = this.createAttributeFields(y, width);
             y = this.createPointerFields(y, width);
@@ -252,15 +255,19 @@ define([
             rx = width/2;
             dy = y - margin - initialY;
             height = margin + this.dense.height + dy;
-            path = [
-                `M${-rx},0`,
-                `l ${width} 0`,
-                `l 0 ${height}`,
-                `l -${width} 0`,
-                `l 0 -${height}`
-            ].join(' ');
             this.$body
-                .attr('d', path);
+                .transition()
+                .attr('x', -rx)
+                .attr('y', 0)
+                .attr('rx', 0)
+                .attr('ry', 0)
+                .attr('width', width)
+                .attr('height', height)
+                .each('end', (a1, a2) => {
+                    if (!isAnUpdate) {
+                        this.$attributes.attr('opacity', 1);
+                    }
+                });
 
             this.height = height;
             this.width = width;
@@ -274,9 +281,14 @@ define([
         this.onResize();
     };
 
+    EllipseDecorator.prototype.clearFields = function() {
+        this.fields.forEach(field => field.destroy());
+        this.fields = [];
+        this.$attributes.remove();
+    };
+
     EllipseDecorator.prototype.condense = function() {
-        var path,
-            width,
+        var width,
             rx,
             ry;
 
@@ -284,18 +296,18 @@ define([
         rx = width/2;
         ry = this.dense.height/2;
 
-        path = [
-            `M${-rx},0`,
-            `a${rx},${ry} 0 1,0 ${width},0`,
-            `a${rx},${ry} 0 1,0 -${width},0`
-        ].join(' ');
+        // Clear the attributes
+        this.clearFields();
 
         this.$body
-            .attr('d', path);
+            .transition()
+            .attr('x', -rx)
+            .attr('y', -ry)
+            .attr('width', width)
+            .attr('height', 2*ry)
+            .attr('ry', ry)
+            .attr('rx', width/2);
 
-        // Clear the attributes
-        this.fields.forEach(field => field.destroy());
-        this.$attributes.remove();
         this.$attributes = this.$el.append('g')
             .attr('fill', '#222222');
 
@@ -375,25 +387,16 @@ define([
     };
 
     EllipseDecorator.prototype.render = function(zoom) {
-        var transition = this.$body.transition()
-            .delay(200)
+        this.$body
             .attr('opacity', 1)
             .attr('stroke', this.color)
             .attr('fill', this.color);
 
-        this.$name
-            .text(this.name)
+        this.$name.text(this.name)
             .transition()
-            .delay(200)
             .attr('opacity', 1);
 
-        if (this.expanded) {
-            transition.each('end', () =>
-                this.fields.forEach(field => field.render(zoom)));
-        } else {
-            this.fields.forEach(field => field.render(zoom));
-        }
-
+        this.fields.forEach(field => field.render(zoom));
         this.updateDenseWidth();
         this.updateExpandedWidth(zoom);
     };
