@@ -159,19 +159,69 @@ define([
         }
     };
 
+    EllipseDecorator.prototype.ROW_HEIGHT = 15;
+    EllipseDecorator.prototype.createAttributeFields = function(y, width) {
+        var attrNames = Object.keys(this._attributes),
+            field,
+            attr;
+
+        for (var i = attrNames.length; i--;) {
+            // Create attribute field
+            y += this.ROW_HEIGHT;
+            attr = this._attributes[attrNames[i]];
+            field = new this.AttributeField(
+                this.logger,
+                this.$attributes,
+                attr,
+                y,
+                width
+            );
+            field.saveAttribute = this.saveAttribute.bind(this, attrNames[i]);
+            this.fields.push(field);
+        }
+        return y;
+    };
+
+    EllipseDecorator.prototype.createPointerFields = function(y, width) {
+        var field,
+            ptr;
+
+        // Add the pointer fields
+        for (var i = this.ptrNames.length; i--;) {
+            y += this.ROW_HEIGHT;
+            ptr = this._node.pointers[this.ptrNames[i]];
+            field = new PointerField(
+                this.$attributes,
+                this.ptrNames[i],
+                this.nameFor[ptr] || ptr,
+                width,
+                y
+            );
+            // add event handlers
+            field.savePointer = this.savePointer.bind(this, this.ptrNames[i]);
+            field.selectTarget = this.selectTargetFor.bind(this, this.ptrNames[i]);
+            this.pointers[this.ptrNames[i]] = field;
+
+            if (!this.pointersByTgt[ptr]) {
+                this.pointersByTgt[ptr] = [];
+            }
+            this.pointersByTgt[ptr].push(field);
+
+            this.fields.push(field);
+        }
+        return y;
+    };
+
     EllipseDecorator.prototype.expand = function() {
         var height,
             width,
             rx,
-            attrNames = Object.keys(this._attributes),
-            field,
-            attr,
             ptr,
             path,
-            textHeight = 15,
 
             // Attributes
             initialY = 25,
+            attrNames = Object.keys(this._attributes),
             nameCount = (this.ptrNames.length + attrNames.length),
             y = 5,
             i;
@@ -180,7 +230,7 @@ define([
         if (nameCount > 0) {
 
             // Get the height from the number of attributes
-            height = y + this.dense.height + textHeight*nameCount;
+            height = y + this.dense.height + this.ROW_HEIGHT*nameCount;
             width = Math.max(
                 this.nameWidth + 2 * NAME_MARGIN,
                 this.size.width,
@@ -208,44 +258,8 @@ define([
             this.$attributes = this.$el.append('g')
                 .attr('fill', '#222222');
 
-            for (i = attrNames.length; i--;) {
-                // Create attribute field
-                y += textHeight;
-                attr = this._attributes[attrNames[i]];
-                field = new AttributeField(
-                    this.logger,
-                    this.$attributes,
-                    attr,
-                    y,
-                    width
-                );
-                field.saveAttribute = this.saveAttribute.bind(this, attrNames[i]);
-                this.fields.push(field);
-            }
-
-            // Add the pointer fields
-            for (i = this.ptrNames.length; i--;) {
-                y += textHeight;
-                ptr = this._node.pointers[this.ptrNames[i]];
-                field = new PointerField(
-                    this.$attributes,
-                    this.ptrNames[i],
-                    this.nameFor[ptr] || ptr,
-                    width,
-                    y
-                );
-                // add event handlers
-                field.savePointer = this.savePointer.bind(this, this.ptrNames[i]);
-                field.selectTarget = this.selectTargetFor.bind(this, this.ptrNames[i]);
-                this.pointers[this.ptrNames[i]] = field;
-
-                if (!this.pointersByTgt[ptr]) {
-                    this.pointersByTgt[ptr] = [];
-                }
-                this.pointersByTgt[ptr].push(field);
-
-                this.fields.push(field);
-            }
+            y = this.createAttributeFields(y, width);
+            this.createPointerFields(y, width);
 
 
             // Update width, height
