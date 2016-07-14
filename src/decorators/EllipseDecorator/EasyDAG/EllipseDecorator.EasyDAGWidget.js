@@ -1,10 +1,6 @@
 /*globals define, _, WebGMEGlobal */
 /*jshint browser: true, camelcase: false*/
 
-/**
- * @author brollb / https://github.com/brollb
- */
-
 define([
     'js/Constants',
     'js/NodePropertyNames',
@@ -212,7 +208,7 @@ define([
         return y;
     };
 
-    EllipseDecorator.prototype.expand = function() {
+    EllipseDecorator.prototype.expand = function(force) {
         var height,
             width,
             rx,
@@ -224,31 +220,20 @@ define([
             attrNames = Object.keys(this._attributes),
             nameCount = (this.ptrNames.length + attrNames.length),
             isAnUpdate = this.expanded,
-            y = 5,
+            margin = 5,
+            y = margin,
+            dy,
             i;
 
         // Only expand if the node has attributes to show
-        if (nameCount > 0) {
+        if (force || nameCount > 0) {
 
             // Get the height from the number of attributes
-            height = y + this.dense.height + this.ROW_HEIGHT*nameCount;
             width = Math.max(
                 this.nameWidth + 2 * NAME_MARGIN,
                 this.size.width,
                 this.fieldsWidth + 3 * NAME_MARGIN
             );
-            rx = width/2;
-
-            path = [
-                `M${-rx},0`,
-                `l ${width} 0`,
-                `l 0 ${height}`,
-                `l -${width} 0`,
-                `l 0 -${height}`
-            ].join(' ');
-
-            this.$body
-                .attr('d', path);
 
             // Shift name down
             this.$name.attr('y', '20');
@@ -260,10 +245,23 @@ define([
                 .attr('fill', '#222222');
 
             y = this.createAttributeFields(y, width);
-            this.createPointerFields(y, width);
+            y = this.createPointerFields(y, width);
 
 
             // Update width, height
+            rx = width/2;
+            dy = y - margin - initialY;
+            height = margin + this.dense.height + dy;
+            path = [
+                `M${-rx},0`,
+                `l ${width} 0`,
+                `l 0 ${height}`,
+                `l -${width} 0`,
+                `l 0 -${height}`
+            ].join(' ');
+            this.$body
+                .attr('d', path);
+
             this.height = height;
             this.width = width;
             this.expanded = true;
