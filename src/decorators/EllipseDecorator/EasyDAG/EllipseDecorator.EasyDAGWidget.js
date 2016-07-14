@@ -173,6 +173,7 @@ define([
             // Attributes
             initialY = 25,
             nameCount = (this.ptrNames.length + attrNames.length),
+            isAnUpdate = this.expanded,
             y = 5,
             i;
 
@@ -254,6 +255,8 @@ define([
             this.expanded = true;
             this.$el
                 .attr('transform', `translate(${this.width/2}, 0)`);
+        } else if (isAnUpdate) {
+            this.condense();
         }
 
         this.onResize();
@@ -296,10 +299,12 @@ define([
     };
 
     EllipseDecorator.prototype.onSelect = function() {
+        this._selected = true;
         this.expand();
     };
 
     EllipseDecorator.prototype.onDeselect = function() {
+        this._selected = false;
         this.condense();
     };
 
@@ -385,7 +390,7 @@ define([
         this._node = node;
         // Update the attributes
         this.setAttributes();
-        if (this.expanded) {
+        if (this._selected) {
             this.expand();
         } else {
             this.condense();
