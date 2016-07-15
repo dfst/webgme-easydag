@@ -244,7 +244,7 @@ define([
                 .attr('fill', '#222222');
 
             if (!isAnUpdate) {
-            this.$attributes.attr('opacity', 0);
+                this.$attributes.attr('opacity', 0);
             }
 
             y = this.createAttributeFields(y, width);
@@ -290,7 +290,8 @@ define([
     EllipseDecorator.prototype.condense = function() {
         var width,
             rx,
-            ry;
+            ry,
+            y = 0;
 
         width = Math.max(this.nameWidth + 2 * NAME_MARGIN, this.dense.width);
         rx = width/2;
@@ -309,7 +310,12 @@ define([
             .attr('rx', width/2);
 
         this.$attributes = this.$el.append('g')
-            .attr('fill', '#222222');
+            .attr('opacity', 0)
+            .attr('fill', 'none');
+
+        // Create an invisible attributes field container for calculating width
+        y = this.createAttributeFields(y, width);
+        y = this.createPointerFields(y, width);
 
         this.height = this.dense.height;
         this.width = width;
@@ -364,25 +370,29 @@ define([
     };
 
     // Reads the name width if it is currently unknown
-    EllipseDecorator.prototype.updateDenseWidth = function() {
+    EllipseDecorator.prototype.updateWidth = function(zoom) {
+        var needsUpdate = false;
+
+        zoom = zoom || 1;
         if (!this.nameWidth) {
             this.nameWidth = this.$name.node().getBoundingClientRect().width;
-
-            // Update the condensed width
-            if (this.nameWidth > this.dense.width && !this.expanded) {
-                // Fix the condensed size
-                this.condense();
-            }
+            needsUpdate = !this.expanded && this.nameWidth > this.dense.width;
         }
-    };
 
-    EllipseDecorator.prototype.updateExpandedWidth = function(zoom) {
-        zoom = zoom || 1;
-        if (!this.fieldsWidth && this.expanded) {
+        if (!this.fieldsWidth) {
             this.fieldsWidth = Math.max.apply(null,
                 this.fields.map(field => field.width())
             )/zoom;
-            this.expand();
+            needsUpdate = needsUpdate || this.expanded;
+        }
+
+        // Update the ui, if needed
+        if (needsUpdate) {
+            if (this.expanded) {
+                this.expand();
+            } else {
+                this.condense();
+            }
         }
     };
 
@@ -397,8 +407,7 @@ define([
             .attr('opacity', 1);
 
         this.fields.forEach(field => field.render(zoom));
-        this.updateDenseWidth();
-        this.updateExpandedWidth(zoom);
+        this.updateWidth(zoom);
     };
 
     EllipseDecorator.prototype.update = function(node) {
