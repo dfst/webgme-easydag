@@ -54,6 +54,7 @@ define([
         // Remove current territory patterns
         if (self._currentNodeId) {
             self._client.removeUI(self._territoryId);
+            self._territoryId = null;
             delete self._selfPatterns[self._currentNodeId];
         }
 
@@ -237,6 +238,10 @@ define([
     EasyDAGControl.prototype.destroy = function () {
         this._detachClientEventListeners();
         this._removeToolbarItems();
+        if (this._territoryId) {
+            this._client.removeUI(this._territoryId);
+            this._territoryId = null;
+        }
     };
 
     EasyDAGControl.prototype._attachClientEventListeners = function () {
