@@ -8,7 +8,8 @@ define([
 ], function(
     Field
 ) {
-    var PointerField = function(parentEl, name, value, width, y) {
+    var PointerField = function(parentEl, name, value, width, y, hidden) {
+        this.hidden = hidden;
         Field.call(this, parentEl, name, value, width, y);
     };
     _.extend(PointerField.prototype, Field.prototype);
@@ -22,7 +23,7 @@ define([
     };
 
     PointerField.prototype.render = function() {
-        if (this.hasIcon()) {
+        if (this.hasIcon() && !this.hidden) {
             Field.prototype.render.apply(this, arguments);
             this.$icon.on('click', this.savePointer.bind(this, null));
         }
