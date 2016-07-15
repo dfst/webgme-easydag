@@ -15,8 +15,8 @@ define([
         this.createContent(width, y, this.value);
     };
 
-    Field.PADDING = 12,
-    Field.BUTTON_MARGIN = 12,
+    Field.PADDING = 12;
+    Field.BUTTON_MARGIN = 12;
     Field.prototype.EMPTY_MSG = '<none>';
     Field.prototype.createLabel = function(width, y) {
         // Attribute name
@@ -29,7 +29,8 @@ define([
             .attr('class', 'attr-title')
             .attr('text-anchor', 'start')
             .attr('dominant-baseline', 'middle')
-            .text(`${this.name}: `);
+            .text(`${this.name}: `)
+            .on('click', () => this.onLabelClick());
     };
 
     Field.prototype.isEmpty = function() {
@@ -64,6 +65,7 @@ define([
         return !!this.$icon;
     };
 
+    Field.prototype.onLabelClick =
     Field.prototype.onClick = function() {
         // Override in subclass
     };
