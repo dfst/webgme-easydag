@@ -81,10 +81,11 @@ define([
         // All nodes are centered on the x value (not the y)
         this.$el
             .transition()
-            .attr('transform', `translate(${left}, ${top})`);
-
-        this.decorator.render(zoom);
-        this.decorator.updateHighlightShape();
+            .attr('transform', `translate(${left}, ${top})`)
+            .each('end', () => {
+                this.decorator.render(zoom);
+                this.decorator.updateHighlightShape();
+            });
 
         // Correct the icon location
         if (this.$icon) {
