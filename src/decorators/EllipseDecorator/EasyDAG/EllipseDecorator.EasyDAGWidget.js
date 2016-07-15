@@ -178,7 +178,7 @@ define([
         return y;
     };
 
-    EllipseDecorator.prototype.createPointerFields = function(y, width) {
+    EllipseDecorator.prototype.createPointerFields = function(y, width, hidden) {
         var field,
             ptr;
 
@@ -191,11 +191,14 @@ define([
                 this.ptrNames[i],
                 this.nameFor[ptr] || ptr,
                 width,
-                y
+                y,
+                hidden
             );
             // add event handlers
-            field.savePointer = this.savePointer.bind(this, this.ptrNames[i]);
-            field.selectTarget = this.selectTargetFor.bind(this, this.ptrNames[i]);
+            if (!hidden) {
+                field.savePointer = this.savePointer.bind(this, this.ptrNames[i]);
+                field.selectTarget = this.selectTargetFor.bind(this, this.ptrNames[i]);
+            }
             this.pointers[this.ptrNames[i]] = field;
 
             if (!this.pointersByTgt[ptr]) {
@@ -315,7 +318,7 @@ define([
 
         // Create an invisible attributes field container for calculating width
         y = this.createAttributeFields(y, width);
-        y = this.createPointerFields(y, width);
+        y = this.createPointerFields(y, width, true);
 
         this.height = this.dense.height;
         this.width = width;
@@ -362,7 +365,6 @@ define([
         if (this.usingNodeColor) {
             this.color = this._node.color || this.color;
         }
-        this.fieldsWidth = null;
 
         // Update pointers
         this.ptrNames = this._node.pointers ? Object.keys(this._node.pointers) : [];
@@ -419,6 +421,7 @@ define([
         } else {
             this.condense();
         }
+        this.fieldsWidth = null;
     };
 
     EllipseDecorator.prototype.destroy = function() {
