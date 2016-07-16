@@ -78,6 +78,7 @@ define([
             this.$shape = body;
             this.$highlight[0][0].appendChild(this.$shape);  // FIXME: This is ugly
             this.$shape.setAttribute('filter', 'url(#highlight)');
+            this.$shape.removeAttribute('fill');
         }
     };
 

@@ -154,12 +154,12 @@ define([
     /* * * * * * * * ERRORS/WARNINGS * * * * * * * */
 
     DAGItem.prototype.error = function(message) {
-        this.decorator.highlight('red', message);
+        this.decorator.highlight('red');
         this.decorator.enableTooltip(message, 'alert');
     };
 
     DAGItem.prototype.warn = function(message) {
-        this.decorator.highlight('#ffa500', message);
+        this.decorator.highlight('#ffa500');
         this.decorator.enableTooltip(message, 'standard');
     };
 
