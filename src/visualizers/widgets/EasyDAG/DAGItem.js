@@ -1,6 +1,7 @@
 /* globals define */
 define([
-    './Icons'
+    './Icons',
+    './lib/opentip-native.min'
 ], function(
     Icons
 ) {
@@ -11,6 +12,7 @@ define([
         this.name = desc.name;
         this.desc = desc;
         this.isConnection = false;
+        this._selected = false;
 
 
         this.$container = parentEl
@@ -28,6 +30,7 @@ define([
 
         this.width = this.decorator.width;
         this.height = this.decorator.height;
+        this.initializeTooltips();
 
         // Set up decorator callbacks
         this.setupDecoratorCallbacks();
@@ -57,12 +60,39 @@ define([
         };
     };
 
+    DAGItem.prototype.initializeTooltips = function() {
+        var hovered = false;
+        this.tooltips = [];
+        this.tooltipConds = {};
+
+        this.$el.on('mouseover', () => {
+            var id;
+            if (hovered) {
+                return;
+            }
+            hovered = true;
+            for (var i = this.tooltips.length; i--;) {
+                id = this.tooltips[i].id;
+                if (!this.tooltipConds[id] || this.tooltipConds[id]()) {
+                    this.tooltips[i].prepareToShow();
+                }
+            }
+        });
+
+        this.$el.on('mouseout', () => {
+            hovered = false;
+            this.tooltips.forEach(tooltip => tooltip.prepareToHide());
+        });
+        this.createHtml();
+    };
+
     DAGItem.prototype.remove = function() {
         this.$container.remove();
     };
 
     DAGItem.prototype.update = function(desc) {
         this.desc = desc;
+        this.name = this.desc.name;
         this.decorator.update(desc);
     };
 
@@ -85,6 +115,7 @@ define([
             .each('end', () => {
                 this.decorator.render(zoom);
                 this.decorator.updateHighlightShape();
+                this.updateHtml();
             });
 
         // Correct the icon location
@@ -96,17 +127,47 @@ define([
         }
     };
 
+    DAGItem.prototype.isSelected = function() {
+        return this._selected;
+    };
+
     DAGItem.prototype.onSelect = function() {
         this.decorator.onSelect();
+        this._selected = true;
     };
 
     DAGItem.prototype.onDeselect = function() {
         this.decorator.onDeselect();
+        this._selected = false;
     };
 
     DAGItem.prototype.destroy = function() {
         this.decorator.destroy();
+        if (this.$tooltipAnchor) {
+            this.$tooltipAnchor.remove();
+        }
     };
+
+    DAGItem.prototype.createHtml = function() {
+        this.$tooltipAnchor = document.createElement('div');
+        this.$tooltipAnchor.style.position = 'absolute';
+        this.$tooltipAnchor.style.visibility = 'hidden';
+
+        this.$tooltipAnchor.setAttribute('class', 'tooltip-anchor');
+        document.body.appendChild(this.$tooltipAnchor);
+    };
+
+    DAGItem.prototype.updateHtml = function() {
+        var d3El = this.decorator.$body || this.$el,
+            item = d3El[0][0],
+            size = item.getBoundingClientRect();
+
+        this.$tooltipAnchor.style.left = size.left + 'px';
+        this.$tooltipAnchor.style.top = size.top + 'px';
+        this.$tooltipAnchor.style.width = size.width + 'px';
+        this.$tooltipAnchor.style.height = size.height + 'px';
+    };
+
 
     /* * * * * * * * CONNECTION INDICATORS * * * * * * * */
     DAGItem.prototype.showIcon = function(params) {
@@ -151,16 +212,50 @@ define([
         }
     };
 
+    DAGItem.prototype.destroyTooltip = function(tooltip) {
+        var i = this.tooltips.indexOf(tooltip);
+        if (i !== -1) {
+            this.tooltips.splice(i, 1);
+            i = Opentip.tips.indexOf(tooltip);
+            if (i !== -1) {
+                Opentip.tips.splice(i, 1);
+            }
+        }
+        delete this.tooltipConds[tooltip.id];
+    };
+
+    DAGItem.prototype.createTooltip = function(message, opts) {
+        var tooltip,
+            defaultOpts = {
+                target: this.$tooltipAnchor,
+                fixed: true,
+                showOn: null
+            };
+
+        opts = _.extend(opts || {}, defaultOpts);
+        tooltip = new Opentip(this.$tooltipAnchor, message, opts);
+        this.tooltips.push(tooltip);
+
+        if (opts.showIf) {
+            this.tooltipConds[tooltip.id] = opts.showIf;
+        }
+        return tooltip;
+    };
+
     /* * * * * * * * ERRORS/WARNINGS * * * * * * * */
 
     DAGItem.prototype.error = function(message) {
         this.decorator.highlight('red');
-        this.decorator.enableTooltip(message, 'alert');
+        this.createTooltip(message, {
+            style: 'alert'
+        });
     };
 
     DAGItem.prototype.warn = function(message) {
         this.decorator.highlight('#ffa500');
-        this.decorator.enableTooltip(message, 'standard');
+        this.createTooltip(message, {
+            style: 'standard'
+        });
     };
 
     // Selection using keybindings
@@ -170,7 +265,11 @@ define([
 
     DAGItem.prototype.clear = function() {
         this.decorator.unHighlight();
-        this.decorator.disableTooltip();
+
+        // Destroy all tooltips
+        this.tooltips.forEach(tooltip => tooltip.deactivate());
+        this.tooltips = [];
+        this.tooltipConds = {};
     };
 
     return DAGItem;
