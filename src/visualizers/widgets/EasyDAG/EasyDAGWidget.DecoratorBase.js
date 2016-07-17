@@ -91,11 +91,10 @@ define([
     };
 
     EasyDAGDecoratorBase.prototype.enableTooltip = function(content, style) {
-        this.$tooltip = new Opentip(this.$el[0][0], {
+        this.$tooltip = new Opentip(this.$el[0][0], content, {
             tipJoint: 'left',
             style: style || 'standard'
         });
-        this.$tooltip.setContent(content || 'this is a message!');
         this.$el.on('mouseenter', () => this.$tooltip.show());
         this.$el.on('mouseout', () => this.$tooltip.hide());
     };
