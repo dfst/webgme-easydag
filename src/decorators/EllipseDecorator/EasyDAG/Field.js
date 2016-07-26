@@ -34,15 +34,17 @@ define([
     };
 
     Field.prototype.isEmpty = function() {
-        return !this.value;
+        return this.value === undefined || this.value === null || this.value === '';
     };
 
     Field.prototype.createContent = function(width, y, content) {
         var x = width/2 - Field.PADDING;
+
         if (this.hasIcon()) {
             x -= Field.BUTTON_MARGIN;
         }
-        content = content || this.EMPTY_MSG;
+
+        content = !this.isEmpty() ? content.toString() : this.EMPTY_MSG;
         this.$content = this.$parent.append('text')
             .attr('y', y)
             .attr('x', x)

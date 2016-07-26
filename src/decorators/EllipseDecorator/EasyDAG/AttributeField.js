@@ -28,7 +28,8 @@ define([
     _.extend(AttributeField.prototype, Field.prototype);
 
     AttributeField.prototype.isEmpty = function() {
-        return !this.attr.value && this.attr.value !== 0;
+        return this.attr.value === undefined || this.attr.value === null ||
+            this.attr.value === '';
     };
 
     AttributeField.prototype.createContent = function(width, y) {
@@ -151,7 +152,7 @@ define([
             width = Math.max(position.right-position.left, 15),
             container = $('<div>'),
             parentHtml = $('body'),
-            values = this.attr.values;
+            values = this.attr.type === 'boolean' ? ['true', 'false'] : this.attr.values;
 
         // Using a temp container for the editing
         container.css('top', position.top/this._zoom);
