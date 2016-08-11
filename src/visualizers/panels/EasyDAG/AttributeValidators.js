@@ -1,7 +1,8 @@
+/*globals define*/
 define([], function() {
     var REGEX = {
-        integer: /^\d+$/,
-        float: /^\d*\.?\d*$/
+        integer: /^[-]?\d+$/,
+        float: /^[-]?\d*\.?\d*$/
     };
 
     var validEnum = function(schema, value) {
@@ -15,6 +16,6 @@ define([], function() {
         float: function(schema, value) {
             return REGEX.float.test(value) && validEnum(schema, value);
         },
-        string: validEnum,
+        string: validEnum
     };
 });
