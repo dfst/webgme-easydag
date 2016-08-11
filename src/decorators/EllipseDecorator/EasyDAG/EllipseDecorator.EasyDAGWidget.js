@@ -79,6 +79,7 @@ define([
     _.extend(EllipseDecorator.prototype, DecoratorBase.prototype);
 
     EllipseDecorator.prototype.AttributeField = AttributeField;
+    EllipseDecorator.prototype.PointerField = PointerField;
     EllipseDecorator.prototype.initialize = function() {
         this.width = this.dense.width;
         this.height = this.dense.height;
@@ -186,7 +187,7 @@ define([
         for (var i = this.ptrNames.length; i--;) {
             y += this.ROW_HEIGHT;
             ptr = this._node.pointers[this.ptrNames[i]];
-            field = new PointerField(
+            field = new this.PointerField(
                 this.$attributes,
                 this.ptrNames[i],
                 this.nameFor[ptr] || ptr,
