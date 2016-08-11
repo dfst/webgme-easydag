@@ -33,12 +33,6 @@ define([
             this.updateContainerWidth.bind(this),
             this.refreshExtras.bind(this)
         ]);
-
-        // READ UPDATES
-        //nodeIds = Object.keys(this.items);
-        //nodeIds.forEach(nodeId => {
-            //this.graph.node(nodeId).updateDimensions();
-        //});
     };
 
     EasyDAGWidgetRefresher.prototype.queueFns = function (fns) {
@@ -58,6 +52,7 @@ define([
 
     EasyDAGWidgetRefresher.prototype.refreshConnections = function () {
         var connIds = this.graph.edges();
+        this._logger.debug(`Refreshing ${connIds.length} connections`);
         for (var i = connIds.length; i--;) {
             this.graph.edge(connIds[i]).redraw();
         }
@@ -66,6 +61,7 @@ define([
     EasyDAGWidgetRefresher.prototype.refreshItems = function () {
         // Remove old items
         var nodeIds = _.difference(this.graph.nodes(), Object.keys(this.items));
+        this._logger.info(`Removing ${nodeIds.length} nodes`);
         nodeIds.forEach(nodeId => {
             this.graph.node(nodeId).remove();
             this.graph.removeNode(nodeId);
@@ -73,6 +69,7 @@ define([
 
         // Redraw items
         nodeIds = Object.keys(this.items);
+        this._logger.info(`Redrawing ${nodeIds.length} nodes`);
         for (var i = nodeIds.length; i--;) {
             this.items[nodeIds[i]].redraw(this._zoomValue);
         }
@@ -91,6 +88,7 @@ define([
         shift.y = Math.max(TOP_LEFT_MIN_MARGIN, shift.y);
 
         // Divide actual width by zoom value
+        this._logger.debug(`Updating translation: ${shift.x}, ${shift.y}`);
         this.$svg
             .attr('transform', `translate(${shift.x},${shift.y}) scale(${zoom})`);
     };
@@ -135,6 +133,7 @@ define([
         this.width = Math.max(this.$el.width(), this.getMaxAlongAxis('x') + MARGIN);
         this.height = Math.max(this.$el.height(), this.getMaxAlongAxis('y') + MARGIN);
 
+        this._logger.debug(`Updating width, height to ${this.width}, ${this.height}`);
         this._$svg.attr('width', this.width);
         this._$svg.attr('height', this.height);
     };

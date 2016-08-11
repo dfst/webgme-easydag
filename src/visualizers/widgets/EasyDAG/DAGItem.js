@@ -12,6 +12,7 @@ define([
         this.name = desc.name;
         this.desc = desc;
         this.isConnection = false;
+        this.destroyed = false;
         this._selected = false;
 
 
@@ -113,9 +114,11 @@ define([
             .transition()
             .attr('transform', `translate(${left}, ${top})`)
             .each('end', () => {
-                this.decorator.render(zoom);
-                this.decorator.updateHighlightShape();
-                this.updateHtml();
+                if (!this.destroyed) {
+                    this.decorator.render(zoom);
+                    this.decorator.updateHighlightShape();
+                    this.updateHtml();
+                }
             });
 
         // Correct the icon location
@@ -146,6 +149,7 @@ define([
         if (this.$tooltipAnchor) {
             this.$tooltipAnchor.remove();
         }
+        this.destroyed = true;
     };
 
     DAGItem.prototype.createHtml = function() {

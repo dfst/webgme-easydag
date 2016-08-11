@@ -1,3 +1,4 @@
+/* globals d3, define */
 define([], function() {
     'use strict';
     
@@ -8,6 +9,7 @@ define([], function() {
     };
 
     EasyDAGInitial.prototype.updateEmptyMsg = function() {
+        this._logger.debug(`updating empty message. Empty? ${this._empty}`);
         if (this.$emptyMsg) {
             this.$emptyMsg.remove();
             this.$emptyMsg = null;

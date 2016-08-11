@@ -60,6 +60,7 @@ define([
         });
 
         this.active = false;  // TODO: may be able to merge these
+        this.uuid = 'EasyDAG_' + Date.now();
         this.needsUpdate = false;
         this._connectionOptions = [];
         this._initialize();
@@ -72,14 +73,14 @@ define([
 
         // Selection manager
         this.selectionManager = new this.SelectionManager(this);
-        this._logger.debug('ctor finished');
+        this._logger.debug('ctor finished (' + this.uuid + ')');
     };
 
     EasyDAGWidget.prototype.ItemClass = DAGItem;
     EasyDAGWidget.prototype.Connection = Connection;
     EasyDAGWidget.prototype.SelectionManager = SelectionManager;
     EasyDAGWidget.prototype._initialize = function () {
-        var self = this;
+        this.refreshUI = _.debounce(EasyDAGWidget.prototype.refreshScreen, 50);
 
         //set Widget title
         this.$el.addClass(WIDGET_CLASS);
@@ -204,6 +205,7 @@ define([
             if (!this.successors[desc.id]) {
                 this.successors[desc.id] = [];
             }
+            this._logger.debug(`Added node ${desc.id}. Refreshing UI`);
             this.refreshUI();
         }
     };
@@ -309,7 +311,6 @@ define([
         this.$el.focus();
         this.active = true;
         this.enableKeyBindings();
-        //this.refreshScreen();
     };
 
     EasyDAGWidget.prototype.onDeactivate = function () {
@@ -330,9 +331,9 @@ define([
         KeyBindings.prototype
     );
 
-    EasyDAGWidget.prototype.onWidgetContainerResize =
-    EasyDAGWidget.prototype.refreshUI = 
-        _.debounce(EasyDAGWidget.prototype.refreshScreen, 50);
+    EasyDAGWidget.prototype.onWidgetContainerResize = function() {
+        this.refreshUI();
+    };
 
     /* * * * * * * * Connecting Nodes * * * * * * * */
     EasyDAGWidget.prototype.startConnectionFrom = function (item) {
