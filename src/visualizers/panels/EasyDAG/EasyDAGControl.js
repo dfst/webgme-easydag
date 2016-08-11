@@ -231,7 +231,9 @@ define([
     };
 
     EasyDAGControl.prototype._stateActiveObjectChanged = function (model, activeObjectId) {
-        this.selectedObjectChanged(activeObjectId);
+        if (activeObjectId !== this._currentNodeId) {
+            this.selectedObjectChanged(activeObjectId);
+        }
     };
 
     /* * * * * * * * Visualizer life cycle callbacks * * * * * * * */
