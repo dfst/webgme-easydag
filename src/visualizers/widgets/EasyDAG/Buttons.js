@@ -86,6 +86,15 @@ define([
         this.onAddButtonClicked(item);
     };
 
+    var Insert = function(params) {
+        ButtonBase.call(this, params);
+    };
+
+    Insert.prototype = Object.create(Add.prototype);
+    Insert.prototype._onClick = function(item) {
+        this.onInsertButtonClicked(item);
+    };
+
     ////////////////////////// Deletion //////////////////////////
     var DeleteBtn = function(params) {
         ButtonBase.call(this, params);
@@ -221,6 +230,7 @@ define([
 
     return {
         Add: Add,
+        Insert: Insert,
         Delete: DeleteBtn,
         ButtonBase: ButtonBase,  // For extension in subclasses
         Enter: Enter,

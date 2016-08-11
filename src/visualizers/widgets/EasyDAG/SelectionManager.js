@@ -149,34 +149,47 @@ define([
     SelectionManager.prototype.createActionButtons = function(width, height) {
         // Check if the selected item can have successors
         var cx = width/2,
-            btn;
+            btns = [];
 
         if (!this.selectedItem.isConnection) {
-            btn = new Buttons.Connect.From({
+            btns.push(new Buttons.Connect.From({
                 context: this._widget,
                 $pEl: this.$selection,
                 item: this.selectedItem,
                 x: cx,
                 y: height
-            });
+            }));
 
-            btn = new Buttons.Connect.To({
+            btns.push(new Buttons.Connect.To({
                 context: this._widget,
                 $pEl: this.$selection,
                 item: this.selectedItem,
                 x: cx,
                 y: 0
-            });
+            }));
+        } else {
+            // Create the insert button!
+            // TODO: Check if there are any nodes that can have the
+            // given predecessors and successors
+            btns.push(new Buttons.Insert({
+                context: this._widget,
+                $pEl: this.$selection,
+                item: this.selectedItem,
+                x: cx,
+                y: height/2
+            }));
         }
 
         // Remove button
-        btn = new Buttons.DeleteOne({
+        btns.push(new Buttons.DeleteOne({
             context: this._widget,
             $pEl: this.$selection,
             item: this.selectedItem,
             x: 0,
             y: 0
-        });
+        }));
+
+        return btns;
     };
 
     SelectionManager.prototype.isSelected = function(id) {

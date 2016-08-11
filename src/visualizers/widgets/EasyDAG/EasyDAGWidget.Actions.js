@@ -26,6 +26,13 @@ define([
             .then(node => this.onAddItemSelected(item, node, reverse));
     };
 
+    EasyDAGWidgetActions.prototype.onInsertButtonClicked = function(item) {
+        console.log('insert button clicked!');
+        //var insertPairs = this.getValidInsertions
+        // Get a node to insert in place of the given connection
+        // TODO
+    };
+
     EasyDAGWidgetActions.prototype.selectTargetFor = function(itemId, ptr, filter) {
         // Get valid targets for itemId, ptr
         var validTargets = this.getValidTargetsFor(itemId, ptr, filter);
