@@ -80,7 +80,7 @@ define([
             self._currentNodeParentId = parentId;
 
             self._territoryId = self._client.addUI(self, function (events) {
-                self._eventCallback(events);
+                setTimeout(self._eventCallback.bind(self), 0, events);
             });
 
             // Update the territory
