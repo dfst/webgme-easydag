@@ -275,11 +275,16 @@ define([
     };
 
     EasyDAGWidget.prototype.updateNode = function (desc) {
+        var item;
         if (desc) {
+            item = this.items[desc.id];
             // Update the attributes displayed on the node
-            this.items[desc.id].update(desc);
+            // Check if the nodes have any changes
+            if (!_.isEqual(item.desc, desc)) {
+                item.update(desc);
+                this.refreshUI();
+            }
         }
-        this.refreshUI();
     };
 
     EasyDAGWidget.prototype.updateConnection = function (desc) {
