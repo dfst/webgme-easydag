@@ -28,7 +28,7 @@ define([
 
     EasyDAGWidgetActions.prototype.onInsertButtonClicked = function(item) {
         console.log('insert button clicked!');
-        //var insertPairs = this.getValidInsertions
+        var insertPairs = this.getValidInsertions(item.id);
         // Get a node to insert in place of the given connection
         // TODO
     };

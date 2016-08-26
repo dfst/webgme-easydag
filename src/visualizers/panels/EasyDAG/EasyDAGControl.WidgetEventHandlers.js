@@ -45,6 +45,7 @@ define([
         this._widget.getValidPredecessors = this.getValidPredecessors.bind(this);
         this._widget.getValidExistingSuccessors = this.getValidExistingSuccessors.bind(this);
         this._widget.getValidExistingPredecessors = this.getValidExistingPredecessors.bind(this);
+        this._widget.getValidInsertions = this.getValidInsertions.bind(this);
         this._widget.connectNodes = this._connectNodes.bind(this);
     };
 
@@ -537,6 +538,22 @@ define([
                 node: this._getObjectDescriptor(id)
             };
         });
+    };
+
+    EasyDAGControlEventHandlers.prototype.getValidInsertions = function(connId) {
+        var conn = this._client.getNode(connId),
+            srcId = conn.getPointer(CONN_PTR.START).to,
+            dstId = conn.getPointer(CONN_PTR.END).to,
+            successors = this.getValidSuccessors(srcId),
+            predecessors = this.getValidPredecessors(dstId),
+            ids = _.intersection(successors.map(s => s.node.id), predecessors.map(p => p.node.id));
+
+        // Filter the successors by the valid predecessors of dstId
+        console.log('valid intersection ids:', ids);
+
+        // Return [{nodeId, connId}]
+        // TODO:
+        return [];
     };
 
     return EasyDAGControlEventHandlers;
