@@ -100,7 +100,7 @@ define([
 
         // create the nodes
         dstId = this._client.createChild({parentId, baseId: dstBaseId});
-        this.onAddItem(dstId);
+        this.onAddItem(dstId, dstBaseId, parentId);
         connId = this._client.createChild({parentId, baseId: connBaseId});
 
         // connect the connection to the node
@@ -162,7 +162,7 @@ define([
         var parentId = this._currentNodeId,
             newNodeId = this._client.createChild({parentId, baseId});
 
-        this.onAddItem(newNodeId);
+        this.onAddItem(newNodeId, baseId, parentId);
         return newNodeId;
     };
 
@@ -312,13 +312,14 @@ define([
             }, false);
     };
 
-    EasyDAGControlEventHandlers.prototype.getDstToConnId = function(connIds) {
+    EasyDAGControlEventHandlers.prototype.getDstToConnId = function(connIds, reverse) {
         var dstDict = {},
             descs,
-            items;
+            items,
+            ptr = reverse ? CONN_PTR.START : CONN_PTR.END;
 
         for (var i = connIds.length; i--;) {
-            items = this._client.getPointerMeta(connIds[i], CONN_PTR.END).items;
+            items = this._client.getPointerMeta(connIds[i], ptr).items;
             for (var j = items.length; j--;) {
                 // Get all descendents
                 descs = this._getAllDescendentIds(items[j].id);
@@ -329,16 +330,18 @@ define([
             }
         }
         return dstDict;
-
     };
 
     EasyDAGControlEventHandlers.prototype.getValidPredecessors = function(nodeId) {
-        // Get a new node that could be created before the given node
-        // TODO
+        return this.getValidCessorNodes(nodeId, true);
     };
 
     EasyDAGControlEventHandlers.prototype.getValidSuccessors =
     EasyDAGControlEventHandlers.prototype._getValidSuccessorNodes = function(nodeId) {
+        return this.getValidCessorNodes(nodeId);
+    };
+
+    EasyDAGControlEventHandlers.prototype.getValidCessorNodes = function(nodeId, rev) {
         // Get all connections that can be contained in the parent node
         var self = this,
             node = this._client.getNode(nodeId),
@@ -359,10 +362,10 @@ define([
             .filter(id => self._client.getNode(id).isConnection());
 
         // Get the connections that have this nodeId as a valid source
-        connIds = allConnIds.filter(connId => this.connCanStartAt(nodeId, connId));
+        connIds = allConnIds.filter(connId => this.connCanStartAt(nodeId, connId, rev));
 
         // Get all (unique) valid destinations of these connections
-        dstDict = this.getDstToConnId(connIds);
+        dstDict = this.getDstToConnId(connIds, rev);
 
         // Remove all possibilities that cannot be contained in the parent
         dstIds = Object.keys(dstDict)
