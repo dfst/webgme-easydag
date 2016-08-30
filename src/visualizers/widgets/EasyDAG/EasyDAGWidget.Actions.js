@@ -28,10 +28,11 @@ define([
 
     EasyDAGWidgetActions.prototype.selectTargetFor = function(itemId, ptr, filter) {
         // Get valid targets for itemId, ptr
-        var validTargets = this.getValidTargetsFor(itemId, ptr, filter);
+        var validTargets = this.getValidTargetsFor(itemId, ptr, filter),
+            emptyMsg = `No valid targets for "${ptr}"`;
 
         // Show them to the user
-        AddNodeDialog.prompt(validTargets)
+        AddNodeDialog.prompt(validTargets, {emptyMsg: emptyMsg})
             .then(selected => {
                 var item = this.items[itemId];
                 if (item.decorator.savePointer) {

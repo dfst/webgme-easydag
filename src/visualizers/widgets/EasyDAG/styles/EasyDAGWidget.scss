@@ -49,6 +49,15 @@
   }
 }
 
-#node-container .easydag-node {
-    margin: 5px;
+#node-container {
+    .easydag-node {
+        margin: 5px;
+    }
+    .empty-msg {
+        font-size: 1.5em;
+        color: #9e9e9e;
+        text-anchor: middle;
+        text-align: center;
+        font-style: italic;
+    }
 }

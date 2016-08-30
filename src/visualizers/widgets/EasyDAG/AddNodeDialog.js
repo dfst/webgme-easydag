@@ -12,11 +12,13 @@ define([
 
     var COL_CLASS = 'easydag-node col-md-2 col-xs-4',
         DEFAULT_OPTS = {
-            cols: 6
+            cols: 6,
+            emptyMsg: 'No valid nodes'
+
         };
 
     var AddNodeDialog = function(opts) {
-        this.opts = opts || DEFAULT_OPTS;
+        this.opts = _.extend({}, DEFAULT_OPTS, opts);
         this._template = _.template(this.opts.html || AddNodeTemplate);
         this._dialog = null;
     };
@@ -25,7 +27,8 @@ define([
         // Populate the template
         var containers = pairs.map(p => new Container(p)),
             container,
-            content;
+            content,
+            noNodeMsg;
 
         // Create the dialog and add the nodes
         content = this._template({
@@ -34,19 +37,24 @@ define([
         });
 
         this._dialog = $(content);
-        
         container = this._dialog.find('#node-container');
-        if (this.opts.tabs) {
-            this._addTabbed(container, containers);
+
+        if (containers.length) {
+            if (this.opts.tabs) {
+                this._addTabbed(container, containers);
+            } else {
+                this._addBasic(container, containers);
+            }
+
+            containers
+                .forEach(node => {
+                    node.html.onclick = this.onNodeClicked.bind(this, node.pair);
+                });
         } else {
-            this._addBasic(container, containers);
+            noNodeMsg = $('<div>', {class: 'empty-msg'});
+            noNodeMsg.text(this.opts.emptyMsg);
+            container.append(noNodeMsg);
         }
-
-        containers
-            .forEach(node => {
-                node.html.onclick = this.onNodeClicked.bind(this, node.pair);
-            });
-
         this._dialog.modal('show');
     };
 
