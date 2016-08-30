@@ -10,7 +10,7 @@ define([
 ) {
     'use strict';
 
-    var COL_CLASS = 'col-md-2 col-xs-4',
+    var COL_CLASS = 'easydag-node col-md-2 col-xs-4',
         DEFAULT_OPTS = {
             cols: 6
         };
