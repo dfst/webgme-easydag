@@ -468,37 +468,47 @@ define([
 
     EasyDAGControlEventHandlers.prototype._getSomeCessor = function(fwrd, nodes, nodeId) {
         // Get connections with this item as a 'src'
-        var conns = [],
-            connIds,
-            dstIds,
-            remainingNodes = [],
-            getMoreCessors,
-            ptr;
+        var adjMatrix = {},
+            succs = {},
+            toPtr = fwrd ? 'dst' : 'src',
+            fromPtr = !fwrd ? 'dst' : 'src',
+            to,
+            from,
+            i,j;
 
-        ptr = fwrd ? 'src' : 'dst';
-        for (var i = nodes.length; i--;) {
-            if (nodes[i].isConnection() && (nodes[i].getPointer(ptr).to.indexOf(nodeId) === 0)) {
-                conns.push(nodes[i]);
-            } else {
-                remainingNodes.push(nodes[i]);
+        // For each connection, record it's src, target in the adjacency matrix/list
+        for (i = nodes.length; i--;) {
+            if (nodes[i].isConnection()) {
+                to = this._getSiblingContaining(nodes[i].getPointer(toPtr).to);
+                from = this._getSiblingContaining(nodes[i].getPointer(fromPtr).to);
+                if (!adjMatrix[from]) {
+                    adjMatrix[from] = {};
+                }
+                adjMatrix[from][to] = true;  // make sure there are no dups (use dict)
             }
         }
 
-        getMoreCessors = this._getSomeCessor.bind(this, fwrd, remainingNodes);
-        connIds = conns.map(conn => conn.getId());
+        // From the adjacency matrix, we will start w/ the given nodeId and get all the
+        // "to" nodes from there...
+        var current = [nodeId],
+            neighbors,
+            next;
 
-        // Get the dst of each connection
-        // Make sure it is the sibling container
-        ptr = fwrd ? 'dst' : 'src';
-        dstIds = conns
-            .map(conn => conn.getPointer(ptr).to)
-            .map(dstId => this._getSiblingContaining(dstId));
+        while (current.length) {
+            next = [];
+            for (i = current.length; i--;) {
+                neighbors = Object.keys(adjMatrix[current[i]] || {});
+                for (j = neighbors.length; j--;) {
+                    if (!succs[neighbors[j]]) {
+                        succs[neighbors[j]] = true;
+                        next.push(neighbors[j]);
+                    }
+                }
+            }
+            current = next;
+        }
 
-        // Return the nodeId, connectionIds and the subtrees at the dstIds
-        connIds.push(nodeId);
-        return _.uniq(connIds
-            .concat(dstIds.map(getMoreCessors)
-            .reduce((l1, l2) => l1.concat(l2), [])));
+        return Object.keys(succs);
     };
 
     EasyDAGControlEventHandlers.prototype._isValidTerminalNode = function(nodeId) {
