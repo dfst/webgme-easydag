@@ -222,7 +222,7 @@ define([
         return !meta ? [] : meta.items
             // Get all descendents
             .map(info => this._getAllDescendentIds(info.id))
-            .reduce((prev, curr) => prev.concat(curr));
+            .reduce((prev, curr) => prev.concat(curr), []);
     };
 
     /* * * * * * * * Connecting Node Handlers * * * * * * * */
