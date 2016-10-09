@@ -80,7 +80,7 @@ define([
     EasyDAGWidget.prototype.Connection = Connection;
     EasyDAGWidget.prototype.SelectionManager = SelectionManager;
     EasyDAGWidget.prototype._initialize = function () {
-        this.refreshUI = _.debounce(EasyDAGWidget.prototype.refreshScreen, 50);
+        this.refreshUI = _.debounce(() => this.refreshScreen(), 50);
 
         //set Widget title
         this.$el.addClass(WIDGET_CLASS);
