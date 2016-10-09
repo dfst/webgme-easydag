@@ -12,6 +12,7 @@ define(['d3'], function() {
         this.src = desc.src;
         this.dst = desc.dst;
         this.isConnection = true;
+        this.points = [];
 
         this.x = 10;
         this.y = 10;
