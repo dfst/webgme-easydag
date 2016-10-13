@@ -1,11 +1,16 @@
 /* globals d3, define */
-define([], function() {
+define([
+    'js/Loader/LoaderCircles'
+], function(
+    LoaderCircles
+) {
     'use strict';
     
     var EasyDAGInitial = function() {
         this._empty = true;
         this._emptyMsg = 'Click to create a new node';
         this.$emptyMsg = null;
+        this.loader = new LoaderCircles({containerElement: this.$el});
     };
 
     EasyDAGInitial.prototype.updateEmptyMsg = function() {
@@ -15,7 +20,7 @@ define([], function() {
             this.$emptyMsg = null;
         }
 
-        if (this._empty) {
+        if (this._empty && !this._loading) {
             this._renderEmpty();
         }
     };
@@ -33,6 +38,21 @@ define([], function() {
                 d3.event.preventDefault();
                 this.onCreateInitialNode();
             });
+    };
+
+    EasyDAGInitial.prototype.onLoadStart = function() {
+        this._loading = true;
+        this.loader.start();
+    };
+
+    EasyDAGInitial.prototype.onLoadFinished = function() {
+        var hasRendered = this.width !== undefined;
+
+        this.loader.stop();
+        this._loading = false;
+        if (hasRendered) {
+            this.updateEmptyMsg();
+        }
     };
 
     return EasyDAGInitial;
