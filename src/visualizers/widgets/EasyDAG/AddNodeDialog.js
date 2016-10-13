@@ -21,16 +21,17 @@ define([
         this.opts = _.extend({}, DEFAULT_OPTS, opts);
         this._template = _.template(this.opts.html || AddNodeTemplate);
         this._dialog = null;
+        this.containers = [];
     };
 
     AddNodeDialog.prototype.show = function(title, pairs) {
         // Populate the template
-        var containers = pairs.map(p => new Container(p)),
-            container,
+        var container,
             content,
             noNodeMsg;
 
         // Create the dialog and add the nodes
+        this.containers = pairs.map(p => new Container(p));
         content = this._template({
             options: this.opts,
             title
@@ -39,14 +40,14 @@ define([
         this._dialog = $(content);
         container = this._dialog.find('#node-container');
 
-        if (containers.length) {
+        if (this.containers.length) {
             if (this.opts.tabs) {
-                this._addTabbed(container, containers);
+                this._addTabbed(container);
             } else {
-                this._addBasic(container, containers);
+                this._addBasic(container);
             }
 
-            containers
+            this.containers
                 .forEach(node => {
                     node.html.onclick = this.onNodeClicked.bind(this, node.pair);
                 });
@@ -58,9 +59,9 @@ define([
         this._dialog.modal('show');
     };
 
-    AddNodeDialog.prototype._addBasic = function(container, containers) {
+    AddNodeDialog.prototype._addBasic = function(container) {
         var row;
-        containers
+        this.containers
             .forEach((node, i) => {
                 if (i % 6 === 0) {
                     row = $(NODE_ROW);
@@ -72,10 +73,13 @@ define([
             });
 
         this._dialog.on('shown.bs.modal',
-            () => containers.forEach(d => d.updateSize()));
+            () => this.containers.forEach(d => d.updateSize()));
+
+        this._dialog.on('hide.bs.modal', () => this.empty());
+        this._dialog.on('hidden.bs.modal', () => this._dialog.remove());
     };
 
-    AddNodeDialog.prototype._addTabbed = function(container, containers) {
+    AddNodeDialog.prototype._addTabbed = function(container) {
         var pane,
             containersByTab = {},
             className;
@@ -92,7 +96,7 @@ define([
             });
 
             // Add the nodes to the pane
-            containersByTab[tab] = containers
+            containersByTab[tab] = this.containers
                 .filter(cntr => this.opts.tabFilter(tab, cntr.pair));
 
             containersByTab[tab].forEach(cntr => pane.append(cntr.html));
@@ -105,12 +109,18 @@ define([
             containersByTab[this.opts.tabs[0]].forEach(cntr => cntr.updateSize())
         );
 
+        this._dialog.on('hide.bs.modal', () => this.empty());
         this._dialog.on('hidden.bs.modal', () => this._dialog.remove());
+        
 
         this._dialog.on('shown.bs.tab', 'a[data-toggle="tab"]', (event) => {
             var tabName = event.target.getAttribute('href').substring(1);
             containersByTab[tabName].forEach(cntr => cntr.updateSize());
         });
+    };
+
+    AddNodeDialog.prototype.empty = function() {
+        this.containers.forEach(container => container.destroy());
     };
 
     AddNodeDialog.prototype.onNodeClicked = function(pair, event) {
@@ -135,6 +145,12 @@ define([
         });
 
         this.html.className = COL_CLASS;
+    };
+
+    Container.prototype.destroy = function() {
+        if (this.decorator.destroy) {
+            this.decorator.destroy();
+        }
     };
 
     Container.prototype.updateSize = function() {
