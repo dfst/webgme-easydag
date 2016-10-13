@@ -41,8 +41,8 @@ define([
     };
 
     EasyDAGInitial.prototype.onLoadStart = function() {
-        this.loader.start();
         this._loading = true;
+        this.loader.start();
     };
 
     EasyDAGInitial.prototype.onLoadFinished = function() {

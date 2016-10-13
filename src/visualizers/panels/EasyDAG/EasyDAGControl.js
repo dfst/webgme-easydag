@@ -81,7 +81,7 @@ define([
             self._currentNodeParentId = parentId;
 
             self._territoryId = self._client.addUI(self, function (events) {
-                self._widget.onLoadFinished();  // FIXME: Only on second load...
+                self._widget.onLoadFinished();
                 self._eventCallback(events);
             });
 
