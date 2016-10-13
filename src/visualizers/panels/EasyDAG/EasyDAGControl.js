@@ -58,6 +58,7 @@ define([
             delete self._selfPatterns[self._currentNodeId];
         }
 
+        self._widget.onLoadStart();
         self._currentNodeId = nodeId;
         self._currentNodeParentId = undefined;
 
@@ -80,12 +81,11 @@ define([
             self._currentNodeParentId = parentId;
 
             self._territoryId = self._client.addUI(self, function (events) {
+                self._widget.onLoadFinished();  // FIXME: Only on second load...
                 self._eventCallback(events);
             });
 
             // Update the territory
-            self._client.updateTerritory(self._territoryId, self._selfPatterns);
-
             self._selfPatterns[nodeId] = self.TERRITORY_RULE;
             self._client.updateTerritory(self._territoryId, self._selfPatterns);
         }
