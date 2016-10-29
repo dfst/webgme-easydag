@@ -65,11 +65,12 @@ define([
     };
 
     EasyDAGControlEventHandlers.prototype._getEnumValues = function(nodeId, attr) {
-        return this._client.getAttributeSchema(nodeId, attr).enum || null;
+        var node = this._client.getNode(nodeId);
+        return node.getAttributeMeta(attr).enum || null;
     };
 
     EasyDAGControlEventHandlers.prototype._setPointerForNode = function(nodeId, ptr, tgt) {
-        this._client.makePointer(nodeId, ptr, tgt);
+        this._client.setPointer(nodeId, ptr, tgt);
     };
 
     EasyDAGControlEventHandlers.prototype._getChildrenOf = function(nodeId) {
@@ -80,11 +81,12 @@ define([
     };
 
     EasyDAGControlEventHandlers.prototype._saveAttributeForNode = function(nodeId, attr, value) {
-        var schema = this._client.getAttributeSchema(nodeId, attr);
+        var node = this._client.getNode(nodeId),
+            schema = node.getAttributeMeta(attr);
 
         // Check that the attribute is valid
         if (!VALIDATORS[schema.type] || VALIDATORS[schema.type](schema, value)) {
-            this._client.setAttributes(nodeId, attr, value);
+            this._client.setAttribute(nodeId, attr, value);
         } else {
             this._logger.error('Cannot set attribute "' + attr + '" to "' + value +'".');
         }
@@ -99,9 +101,9 @@ define([
         this._client.startTransaction();
 
         // create the nodes
-        dstId = this._client.createChild({parentId, baseId: dstBaseId});
+        dstId = this._client.createNode({parentId, baseId: dstBaseId});
         this.onAddItem(dstId, dstBaseId, parentId);
-        connId = this._client.createChild({parentId, baseId: connBaseId});
+        connId = this._client.createNode({parentId, baseId: connBaseId});
 
         // connect the connection to the node
         if (reverse) {
@@ -110,8 +112,8 @@ define([
             dstId = tmp;
         }
 
-        this._client.makePointer(connId, CONN_PTR.START, srcId);
-        this._client.makePointer(connId, CONN_PTR.END, dstId);
+        this._client.setPointer(connId, CONN_PTR.START, srcId);
+        this._client.setPointer(connId, CONN_PTR.END, dstId);
 
         this._client.completeTransaction();
         
@@ -138,7 +140,7 @@ define([
         nodeIds.push(nodeId);
 
         this._client.startTransaction(msg);
-        this._client.delMoreNodes(nodeIds);
+        this._client.deleteNodes(nodeIds);
         this._client.completeTransaction();
     };
 
@@ -149,18 +151,18 @@ define([
             msg = `Connecting ${srcName} (${src}) -> ${dstName} (${dst})`;
 
         this._client.startTransaction(msg);
-        connId = this._client.createChild({
+        connId = this._client.createNode({
             parentId: this._currentNodeId,
             baseId: baseId
         });
-        this._client.makePointer(connId, CONN_PTR.START, src);
-        this._client.makePointer(connId, CONN_PTR.END, dst);
+        this._client.setPointer(connId, CONN_PTR.START, src);
+        this._client.setPointer(connId, CONN_PTR.END, dst);
         this._client.completeTransaction();
     };
 
     EasyDAGControlEventHandlers.prototype._createNode = function(baseId) {
         var parentId = this._currentNodeId,
-            newNodeId = this._client.createChild({parentId, baseId});
+            newNodeId = this._client.createNode({parentId, baseId});
 
         this.onAddItem(newNodeId, baseId, parentId);
         return newNodeId;
@@ -441,7 +443,7 @@ define([
             .map(conn => conn.getId());
 
         // Remove all of the nodeIds
-        this._client.delMoreNodes(nodeIds.concat(connIds));
+        this._client.deleteNodes(nodeIds.concat(connIds));
 
     };
 
@@ -527,12 +529,13 @@ define([
             validTargets = [];
 
         items = dirs.map(dir => this._client.getNode(dir).getChildrenIds())
-            .reduce((l1, l2) => l1.concat(l2), []);
+            .reduce((l1, l2) => l1.concat(l2), [])
+            .map(id => this._client.getNode(id));
 
         for (var i = items.length; i--;) {
             for (var t = typeIds.length; t--;) {
-                if (this._client.isTypeOf(items[i], typeIds[t])) {
-                    validTargets.push(items[i]);
+                if (items[i].isTypeOf(typeIds[t])) {
+                    validTargets.push(items[i].getId());
                     break;
                 }
             }

@@ -130,7 +130,7 @@ define([
             // Add the attributes
             nodeObj.getValidAttributeNames()
                 .forEach((name) => {
-                    var meta = this._client.getAttributeSchema(nodeId, name),
+                    var meta = nodeObj.getAttributeMeta(name),
                         type;
 
                     if (meta) {  // skip meta-invalid properties
