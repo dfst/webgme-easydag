@@ -101,9 +101,9 @@ define([
         this._client.startTransaction();
 
         // create the nodes
-        dstId = this._client.createChild({parentId, baseId: dstBaseId});
+        dstId = this._client.createNode({parentId, baseId: dstBaseId});
         this.onAddItem(dstId, dstBaseId, parentId);
-        connId = this._client.createChild({parentId, baseId: connBaseId});
+        connId = this._client.createNode({parentId, baseId: connBaseId});
 
         // connect the connection to the node
         if (reverse) {
@@ -151,7 +151,7 @@ define([
             msg = `Connecting ${srcName} (${src}) -> ${dstName} (${dst})`;
 
         this._client.startTransaction(msg);
-        connId = this._client.createChild({
+        connId = this._client.createNode({
             parentId: this._currentNodeId,
             baseId: baseId
         });
@@ -162,7 +162,7 @@ define([
 
     EasyDAGControlEventHandlers.prototype._createNode = function(baseId) {
         var parentId = this._currentNodeId,
-            newNodeId = this._client.createChild({parentId, baseId});
+            newNodeId = this._client.createNode({parentId, baseId});
 
         this.onAddItem(newNodeId, baseId, parentId);
         return newNodeId;
