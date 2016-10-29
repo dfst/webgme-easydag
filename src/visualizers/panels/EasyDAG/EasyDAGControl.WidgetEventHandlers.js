@@ -529,12 +529,13 @@ define([
             validTargets = [];
 
         items = dirs.map(dir => this._client.getNode(dir).getChildrenIds())
-            .reduce((l1, l2) => l1.concat(l2), []);
+            .reduce((l1, l2) => l1.concat(l2), [])
+            .map(id => this._client.getNode(id));
 
         for (var i = items.length; i--;) {
             for (var t = typeIds.length; t--;) {
-                if (this._client.isTypeOf(items[i], typeIds[t])) {
-                    validTargets.push(items[i]);
+                if (items[i].isTypeOf(typeIds[t])) {
+                    validTargets.push(items[i].getId());
                     break;
                 }
             }
