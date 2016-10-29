@@ -69,7 +69,7 @@ define([
     };
 
     EasyDAGControlEventHandlers.prototype._setPointerForNode = function(nodeId, ptr, tgt) {
-        this._client.makePointer(nodeId, ptr, tgt);
+        this._client.setPointer(nodeId, ptr, tgt);
     };
 
     EasyDAGControlEventHandlers.prototype._getChildrenOf = function(nodeId) {
@@ -84,7 +84,7 @@ define([
 
         // Check that the attribute is valid
         if (!VALIDATORS[schema.type] || VALIDATORS[schema.type](schema, value)) {
-            this._client.setAttributes(nodeId, attr, value);
+            this._client.setAttribute(nodeId, attr, value);
         } else {
             this._logger.error('Cannot set attribute "' + attr + '" to "' + value +'".');
         }
@@ -110,8 +110,8 @@ define([
             dstId = tmp;
         }
 
-        this._client.makePointer(connId, CONN_PTR.START, srcId);
-        this._client.makePointer(connId, CONN_PTR.END, dstId);
+        this._client.setPointer(connId, CONN_PTR.START, srcId);
+        this._client.setPointer(connId, CONN_PTR.END, dstId);
 
         this._client.completeTransaction();
         
@@ -153,8 +153,8 @@ define([
             parentId: this._currentNodeId,
             baseId: baseId
         });
-        this._client.makePointer(connId, CONN_PTR.START, src);
-        this._client.makePointer(connId, CONN_PTR.END, dst);
+        this._client.setPointer(connId, CONN_PTR.START, src);
+        this._client.setPointer(connId, CONN_PTR.END, dst);
         this._client.completeTransaction();
     };
 

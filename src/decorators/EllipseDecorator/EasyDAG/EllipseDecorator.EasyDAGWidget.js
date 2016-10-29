@@ -444,7 +444,7 @@ define([
             this.client.delPointer(this._node.id, name,
                 `Clearing ptr "${name}" of "${this.name}"`);
         } else {
-            this.client.makePointer(this._node.id, name, to, msg);
+            this.client.setPointer(this._node.id, name, to, msg);
         }
     };
 
