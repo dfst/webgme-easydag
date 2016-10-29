@@ -65,7 +65,8 @@ define([
     };
 
     EasyDAGControlEventHandlers.prototype._getEnumValues = function(nodeId, attr) {
-        return this._client.getAttributeSchema(nodeId, attr).enum || null;
+        var node = this._client.getNode(nodeId);
+        return node.getAttributeMeta(attr).enum || null;
     };
 
     EasyDAGControlEventHandlers.prototype._setPointerForNode = function(nodeId, ptr, tgt) {
@@ -80,7 +81,8 @@ define([
     };
 
     EasyDAGControlEventHandlers.prototype._saveAttributeForNode = function(nodeId, attr, value) {
-        var schema = this._client.getAttributeSchema(nodeId, attr);
+        var node = this._client.getNode(nodeId),
+            schema = node.getAttributeMeta(attr);
 
         // Check that the attribute is valid
         if (!VALIDATORS[schema.type] || VALIDATORS[schema.type](schema, value)) {
