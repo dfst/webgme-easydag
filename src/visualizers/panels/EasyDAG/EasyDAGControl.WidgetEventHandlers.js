@@ -140,7 +140,7 @@ define([
         nodeIds.push(nodeId);
 
         this._client.startTransaction(msg);
-        this._client.delMoreNodes(nodeIds);
+        this._client.deleteNodes(nodeIds);
         this._client.completeTransaction();
     };
 
@@ -443,7 +443,7 @@ define([
             .map(conn => conn.getId());
 
         // Remove all of the nodeIds
-        this._client.delMoreNodes(nodeIds.concat(connIds));
+        this._client.deleteNodes(nodeIds.concat(connIds));
 
     };
 
