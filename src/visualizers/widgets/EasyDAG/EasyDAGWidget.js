@@ -63,6 +63,7 @@ define([
         this.uuid = 'EasyDAG_' + Date.now();
         this.needsUpdate = false;
         this._connectionOptions = [];
+        this._connecting = false;
         this._initialize();
         this.resetGraph();
 
@@ -299,7 +300,6 @@ define([
             assert(this.graph.nodes().indexOf('undefined') === -1);
             this.refreshUI();
         }
-        // FIXME
     };
 
     /* * * * * * * * Visualizer life cycle callbacks * * * * * * * */
@@ -394,12 +394,17 @@ define([
             this.onAddButtonClicked(src, reverse);
         });
 
+        this._connecting = true;
     };
 
     EasyDAGWidget.prototype.onDeselect = function(item) {
         if (item !== this._connectionSrc) {
             this.resetConnectingState();
         }
+    };
+
+    EasyDAGWidget.prototype.isConnecting = function() {
+        return this._connecting;
     };
 
     EasyDAGWidget.prototype.onSelect =
@@ -411,6 +416,7 @@ define([
             this._connectionSrc.hideIcon();
             this._connectionSrc = null;
         }
+        this._connecting = false;
     };
 
     return EasyDAGWidget;
