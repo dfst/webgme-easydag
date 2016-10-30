@@ -27,6 +27,11 @@ define([
             .attr('class', 'button ' + this.class)
             .attr('transform', `translate(${this.x}, ${this.y})`);
 
+        // Add title text if provided
+        if (params.title) {
+            this.$el.append('title').text(params.title);
+        }
+
         // Create the button
         this.$el.attr('opacity', 0);
         this._render();
@@ -122,6 +127,7 @@ define([
     };
 
     var DeleteOne = function(params) {
+        params.title = params.title || 'Delete';
         ButtonBase.call(this, params);
     };
 
@@ -172,6 +178,7 @@ define([
 
     Connect.From = function(params) {
         params.class = params.class || 'connect';
+        params.title = params.title || 'Create outgoing connection';
         ButtonBase.call(this, params);
     };
 
@@ -211,6 +218,7 @@ define([
 
     Connect.To = function(params) {
         params.class = params.class || 'connect';
+        params.title = params.title || 'Create incoming connection';
         ButtonBase.call(this, params);
     };
 
