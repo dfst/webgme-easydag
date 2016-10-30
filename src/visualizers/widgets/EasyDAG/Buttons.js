@@ -181,6 +181,9 @@ define([
             this.onAddButtonClicked(item);
         } else {
             this.startConnectionFrom(item);
+            if (this.selectionManager.selectedItem === item) {
+                this.selectionManager.deselect();
+            }
         }
     };
 
@@ -217,6 +220,9 @@ define([
             this.onAddButtonClicked(item, true);
         } else {
             this.startConnectionTo(item);
+            if (this.selectionManager.selectedItem === item) {
+                this.selectionManager.deselect();
+            }
         }
     };
 
