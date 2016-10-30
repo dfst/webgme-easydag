@@ -22,6 +22,10 @@ define(['d3'], function() {
         this.$pEl = pEl;
         this.$el = this.$pEl.append('path')
             .attr('fill', 'white');
+
+        this.$el
+            .on('mouseover', () => this.$el.attr('stroke-width', 3))
+            .on('mouseout', () =>  this.$el.attr('stroke-width', 2));
     };
 
     Connection.prototype.redraw = function() {
