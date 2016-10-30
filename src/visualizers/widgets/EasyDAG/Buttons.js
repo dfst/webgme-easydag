@@ -37,8 +37,11 @@ define([
 
         // TODO: Add tooltip helper
         if (!this.disabled) {
-            this.$el.on('click',
-                this._onClick.bind(this.context, this.item));
+            this.$el.on('click', () => {
+                d3.event.stopPropagation();
+                d3.event.preventDefault();
+                this._onClick.call(this.context, this.item);
+            });
         }
     };
     ButtonBase.prototype.BTN_CLASS = 'basic';
