@@ -10,7 +10,14 @@ define([
         this._empty = true;
         this._emptyMsg = 'Click to create a new node';
         this.$emptyMsg = null;
-        this.loader = new LoaderCircles({containerElement: this.$el});
+        if (!this.isPureSvg) {
+            this.loader = new LoaderCircles({
+                containerElement: this.$el
+            });
+        } else {
+            // loading circles not supported in pure svg yet...
+            this.loader = null;
+        }
     };
 
     EasyDAGInitial.prototype.updateEmptyMsg = function() {
@@ -42,13 +49,17 @@ define([
 
     EasyDAGInitial.prototype.onLoadStart = function() {
         this._loading = true;
-        this.loader.start();
+        if (!this.isPureSvg) {
+            this.loader.start();
+        }
     };
 
     EasyDAGInitial.prototype.onLoadFinished = function() {
         var hasRendered = this.width !== undefined;
 
-        this.loader.stop();
+        if (!this.isPureSvg) {
+            this.loader.stop();
+        }
         this._loading = false;
         if (hasRendered) {
             this.updateEmptyMsg();
