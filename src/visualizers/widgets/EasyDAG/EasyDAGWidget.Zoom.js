@@ -17,7 +17,7 @@ define([
     EasyDAGZoom.prototype.MIN_ZOOM = 0.10;
 
     EasyDAGZoom.prototype._scrollWheelZoom = function(event) {
-        var org = event.originalEvent;
+        var org = (event || d3.event).originalEvent;
 
         if (org && (org.ctrlKey || org.metaKey || org.altKey)) {
             this.updateZoom(org.wheelDelta*this.SCROLL_ZOOM_RATIO);
