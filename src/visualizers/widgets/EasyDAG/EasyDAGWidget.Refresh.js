@@ -68,9 +68,6 @@ define([
         });
 
         // Redraw items
-        if (this.isPureSvg)  // FIXME
-            console.log('refreshing items:', this.items);
-
         nodeIds = Object.keys(this.items);
         this._logger.info(`Redrawing ${nodeIds.length} nodes`);
         for (var i = nodeIds.length; i--;) {
