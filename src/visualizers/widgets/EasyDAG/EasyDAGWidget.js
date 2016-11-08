@@ -120,13 +120,17 @@ define([
         this._$svg.on('click', event => {
             d3.event.stopPropagation();
             d3.event.preventDefault();
-            this.selectionManager.deselect();
-            this.refreshUI();
+            this.onBackgroundClick();
         });
         this.setupItemCallbacks();
 
         if (this.isPureSvg)  // FIXME
             console.log('before refreshUI');
+        this.refreshUI();
+    };
+
+    EasyDAGWidget.prototype.onBackgroundClick = function () {
+        this.selectionManager.deselect();
         this.refreshUI();
     };
 
