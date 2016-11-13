@@ -124,8 +124,6 @@ define([
         });
         this.setupItemCallbacks();
 
-        if (this.isPureSvg)  // FIXME
-            console.log('before refreshUI');
         this.refreshUI();
     };
 
@@ -231,8 +229,6 @@ define([
             if (!this.successors[desc.id]) {
                 this.successors[desc.id] = [];
             }
-        if (this.isPureSvg)  // FIXME
-            console.log('adding node:', desc);
             this._logger.debug(`Added node ${desc.id}. Refreshing UI`);
             this.refreshUI();
         }
@@ -341,7 +337,7 @@ define([
     EasyDAGWidget.prototype.onActivate = function () {
         // Set focus
         if (this.$el.focus) {
-            this.$el.focus();  // FIXME: SVG ONLY SUPPORT
+            this.$el.focus();
         }
         this.active = true;
         this.enableKeyBindings();
@@ -350,7 +346,7 @@ define([
     EasyDAGWidget.prototype.onDeactivate = function () {
         // Set focus
         if (this.$el.blur) {
-            this.$el.blur();  // FIXME: SVG ONLY SUPPORT
+            this.$el.blur();
         }
         this.disableKeyBindings();
         this.active = false;
