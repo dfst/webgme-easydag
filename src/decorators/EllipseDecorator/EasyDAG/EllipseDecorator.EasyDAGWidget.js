@@ -224,7 +224,7 @@ define([
             nameCount = (this.ptrNames.length + attrNames.length),
             isAnUpdate = this.expanded,
             margin = 5,
-            y = margin,
+            y = margin + initialY,
             dy,
             i;
 
@@ -242,7 +242,6 @@ define([
             this.$name.attr('y', '20');
 
             // Add the attribute fields
-            y += initialY;
             this.clearFields();
             this.$attributes = this.$el.append('g')
                 .attr('fill', '#222222');
