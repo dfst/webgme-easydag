@@ -78,14 +78,15 @@ define([
 
     EasyDAGWidgetRefresher.prototype.updateTranslation = function () {
         var zoom = this._zoomValue || 1,
-            shift = {
-                x: this._getTranslation('x'),
-                y: this._getTranslation('y')
-            };
+            shift = {};
+
+        if (!this.centerContent) {
+            return;
+        }
 
         // Make sure it is shifted at least 20 px in each direction
-        shift.x = Math.max(TOP_LEFT_MIN_MARGIN, shift.x);
-        shift.y = Math.max(TOP_LEFT_MIN_MARGIN, shift.y);
+        shift.x = Math.max(TOP_LEFT_MIN_MARGIN, this._getTranslation('x'));
+        shift.y = Math.max(TOP_LEFT_MIN_MARGIN, this._getTranslation('y'));
 
         // Divide actual width by zoom value
         this._logger.debug(`Updating translation: ${shift.x}, ${shift.y}`);
@@ -99,7 +100,11 @@ define([
             size,
             shift;
 
-        size = this.$el[axisSizeName]();
+        if (this.isPureSvg) {
+            size = this.$el.node().getBBox()[axisSizeName];
+        } else {
+            size = this.$el[axisSizeName]();
+        }
         shift = Math.max(0, (size - max)/2);
         return shift < Infinity ? shift : 0;
     };
@@ -109,14 +114,21 @@ define([
         var self = this,
             zoom = this._zoomValue || 1,
             axisSizeName = axis === 'x' ? 'width' : 'height',
-            nodes;
+            rightEdges;  // if axis === 'y', these are the bottom edges
 
-        nodes = this.graph.nodes().map(function(id) {
-            return self.graph.node(id);
-        });
-        return Math.max.apply(null, nodes.map(function(node) {
-            return (node[axis] + zoom*node[axisSizeName]) || 0;
-        }));
+        rightEdges = this.graph.nodes()
+            .map(function(id) {  // get each node from the id
+                return self.graph.node(id);
+            })
+            .map(function(node) {  // get the right edge (left + width)
+                return (node[axis] + zoom*node[axisSizeName]) || 0;
+            });
+
+        if (rightEdges.length) {
+            return Math.max.apply(null, rightEdges);
+        } else {
+            return 0;
+        }
     };
 
     EasyDAGWidgetRefresher.prototype._getMinAlongAxis = function (axis) {
@@ -130,8 +142,21 @@ define([
     };
 
     EasyDAGWidgetRefresher.prototype.updateContainerWidth = function () {
-        this.width = Math.max(this.$el.width(), this.getMaxAlongAxis('x') + MARGIN);
-        this.height = Math.max(this.$el.height(), this.getMaxAlongAxis('y') + MARGIN);
+        var rect,
+            width,
+            height;
+
+        if (this.isPureSvg) {
+            rect = this.$el.node().getBBox();
+            width = rect.width;
+            height = rect.height;
+        } else {
+            width = this.$el.width();
+            height = this.$el.height();
+        }
+
+        this.width = Math.max(width, this.getMaxAlongAxis('x') + MARGIN);
+        this.height = Math.max(height, this.getMaxAlongAxis('y') + MARGIN);
 
         this._logger.debug(`Updating width, height to ${this.width}, ${this.height}`);
         this._$svg.attr('width', this.width);

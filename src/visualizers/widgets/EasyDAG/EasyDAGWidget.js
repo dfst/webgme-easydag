@@ -40,13 +40,33 @@ define([
         };
 
     EasyDAGWidget = function (logger, container) {
-        this._logger = logger.fork('Widget');
+        var opts, svg;
 
-        this.$el = container;
-        this.$el.css({
-            height: '100%',
-            width: '100%'
-        });
+        this.centerContent = true;
+        if (arguments.length === 1) {  // then passed an 'options' object
+            opts = logger;
+            logger = opts.logger;
+            container = opts.container;
+            svg = opts.svg;
+            this.centerContent = opts.autoCenter !== undefined ? opts.autoCenter : true;
+        }
+        this._logger = logger.fork('Widget');
+        this.isPureSvg = false;
+
+        if (container) {
+            this.$el = container;
+            this._$svg = d3.select(this.$el[0])
+                .append('svg');
+        } else if (svg) {  // svg
+            this.isPureSvg = true;
+            this.$el = svg;
+            this._$svg = this.$el;
+        } else {
+            throw Error('Cannot create widget - no parent container (or svg)!');
+        }
+        var clazz = this.$el.attr('class');
+        this.$el.attr('class', clazz + ' ' + WIDGET_CLASS);
+
         this._config = DEFAULT_SETTINGS;
         ComponentSettings.resolveWithWebGMEGlobal(this._config, this.getComponentId());
 
@@ -84,9 +104,6 @@ define([
         this.refreshUI = _.debounce(() => this.refreshScreen(), 50);
 
         //set Widget title
-        this.$el.addClass(WIDGET_CLASS);
-        this._$svg = d3.select(this.$el[0])
-            .append('svg');
 
         this.$svg = this._$svg.append('g');
         this.$connContainer = this.$svg.append('g')
@@ -97,18 +114,21 @@ define([
 
         this.initSvgDefs();
 
-        this.$el[0].style.position = 'absolute';
         this._$svg.style('position', 'relative');
 
         // Selection
-        this.$el.on('click', event => {
-            event.stopPropagation();
-            event.preventDefault();
-            this.selectionManager.deselect();
-            this.refreshUI();
+        this._$svg.on('click', event => {
+            d3.event.stopPropagation();
+            d3.event.preventDefault();
+            this.onBackgroundClick();
         });
         this.setupItemCallbacks();
 
+        this.refreshUI();
+    };
+
+    EasyDAGWidget.prototype.onBackgroundClick = function () {
+        this.selectionManager.deselect();
         this.refreshUI();
     };
 
@@ -154,25 +174,27 @@ define([
         var self = this,
             ItemClass = this.ItemClass;
 
-        ItemClass.prototype.onUpdate = this.refreshUI.bind(this);
+        ItemClass.prototype.onUpdate = function() {
+            this._widget.refreshUI();
+        };
         ItemClass.prototype.selectTargetFor = function(itemId, ptr, filter) {
-            self.selectTargetFor(itemId, ptr, filter);
+            this._widget.selectTargetFor(itemId, ptr, filter);
         };
 
         ItemClass.prototype.saveAttribute = function(attr, value) {
-            self.saveAttributeForNode(this.id, attr, value);
+            this._widget.saveAttributeForNode(this.id, attr, value);
         };
 
         ItemClass.prototype.setPointer = function(ptr, nodeId) {
-            return self.setPointerForNode(this.id, ptr, nodeId);
+            return this._widget.setPointerForNode(this.id, ptr, nodeId);
         };
 
         ItemClass.prototype.getChildrenOf = function(nodeId) {
-            return self.getChildrenOf(nodeId);
+            return this._widget.getChildrenOf(nodeId);
         };
 
         ItemClass.prototype.getEnumValues = function(attr) {
-            return self.getEnumValues(this.id, attr);
+            return this._widget.getEnumValues(this.id, attr);
         };
     };
 
@@ -191,6 +213,7 @@ define([
         if (desc) {
             // Record the node info
             item = new this.ItemClass(this.$itemContainer, desc);
+            item._widget = this;
             item.$el.on('click', () => {
                 d3.event.stopPropagation();
                 d3.event.preventDefault();
@@ -313,14 +336,18 @@ define([
 
     EasyDAGWidget.prototype.onActivate = function () {
         // Set focus
-        this.$el.focus();
+        if (this.$el.focus) {
+            this.$el.focus();
+        }
         this.active = true;
         this.enableKeyBindings();
     };
 
     EasyDAGWidget.prototype.onDeactivate = function () {
         // Set focus
-        this.$el.blur();
+        if (this.$el.blur) {
+            this.$el.blur();
+        }
         this.disableKeyBindings();
         this.active = false;
     };
