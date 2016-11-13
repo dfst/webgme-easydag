@@ -17,8 +17,8 @@ define([
 
         this.context = params.context;  // caller of _onClick
         this.item = params.item;
-        this.x = params.x;
-        this.y = params.y;
+        this.x = params.x || 0;
+        this.y = params.y || 0;
         this.disabled = !!params.disabled;
         this.icon = params.icon;
         this.class = params.class || this.BTN_CLASS;
@@ -35,12 +35,13 @@ define([
         // Create the button
         this.$el.attr('opacity', 0);
         this._render();
-        this.$el
-            .transition()
-            .duration(DURATION)
-            .attr('opacity', 1);
+        if (!params.hide) {
+            this.$el
+                .transition()
+                .duration(DURATION)
+                .attr('opacity', 1);
+        }
 
-        // TODO: Add tooltip helper
         if (!this.disabled) {
             this.$el.on('click', () => {
                 d3.event.stopPropagation();
@@ -50,8 +51,12 @@ define([
         }
     };
     ButtonBase.prototype.BTN_CLASS = 'basic';
+    ButtonBase.prototype.render = function() {
+        // alias for _render
+        return this._render();
+    };
+
     ButtonBase.prototype._render = function() {
-        // TODO: Override this in the children
         console.warn('No button render info specified!');
     };
 
@@ -77,17 +82,21 @@ define([
         var lineRadius = Add.SIZE - Add.BORDER,
             btnColor = '#90caf9';
 
+        if (this.$body) {
+            this.$body.remove();
+        }
         if (this.disabled) {
             this.$el.attr('class', 'disabled');
             btnColor = '#e0e0e0';
         }
 
-        this.$el
+        this.$body = this.$el.append('g');
+        this.$body
             .append('circle')
             .attr('r', Add.SIZE)
             .attr('fill', btnColor);
 
-        Icons.addIcon(this.icon || 'plus', this.$el, {radius: lineRadius});
+        Icons.addIcon(this.icon || 'plus', this.$body, {radius: lineRadius});
     };
 
     Add.prototype._onClick = function(item) {
