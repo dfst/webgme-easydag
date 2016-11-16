@@ -59,16 +59,8 @@ define([
     };
 
     EasyDAGWidgetRefresher.prototype.refreshItems = function () {
-        // Remove old items
-        var nodeIds = _.difference(this.graph.nodes(), Object.keys(this.items));
-        this._logger.info(`Removing ${nodeIds.length} nodes`);
-        nodeIds.forEach(nodeId => {
-            this.graph.node(nodeId).remove();
-            this.graph.removeNode(nodeId);
-        });
-
         // Redraw items
-        nodeIds = Object.keys(this.items);
+        var nodeIds = Object.keys(this.items);
         this._logger.info(`Redrawing ${nodeIds.length} nodes`);
         for (var i = nodeIds.length; i--;) {
             this.items[nodeIds[i]].redraw(this._zoomValue);
