@@ -102,22 +102,25 @@ define([
     };
 
     EasyDAGWidgetRefresher.prototype._getMaxAlongAxis =
-    EasyDAGWidgetRefresher.prototype.getMaxAlongAxis =
-    EasyDAGWidgetRefresher.prototype.getLengthAlongAxis = function (axis) {
-        var zoom = this._zoomValue || 1,
+    EasyDAGWidgetRefresher.prototype.getMaxAlongAxis = function (axis) {
+        var self = this,
+            zoom = this._zoomValue || 1,
             axisSizeName = axis === 'x' ? 'width' : 'height',
-            max = 0,
-            min = 0,
-            nodeIds = this.graph.nodes(),
-            node;
+            rightEdges;  // if axis === 'y', these are the bottom edges
 
-        for (var i = nodeIds.length; i--;) {
-            node = this.graph.node(nodeIds[i]);
-            max = Math.max(max, (node[axis] + zoom*node[axisSizeName]) || 0);
-            min = min === 0 ? node[axis] : Math.min(min, node[axis]);
+        rightEdges = this.graph.nodes()
+            .map(function(id) {  // get each node from the id
+                return self.graph.node(id);
+            })
+            .map(function(node) {  // get the right edge (left + width)
+                return (node[axis] + zoom*node[axisSizeName]) || 0;
+            });
+
+        if (rightEdges.length) {
+            return Math.max.apply(null, rightEdges);
+        } else {
+            return 0;
         }
-        min = min || 0;
-        return max-min;
     };
 
     EasyDAGWidgetRefresher.prototype._getMinAlongAxis = function (axis) {
@@ -131,8 +134,8 @@ define([
     };
 
     EasyDAGWidgetRefresher.prototype.updateContainerWidth = function () {
-        this.width = this.getLengthAlongAxis('x') + MARGIN;
-        this.height = this.getLengthAlongAxis('y') + MARGIN;
+        this.width = this.getMaxAlongAxis('x') + MARGIN;
+        this.height = this.getMaxAlongAxis('y') + MARGIN;
 
         this._logger.debug(`Updating width, height to ${this.width}, ${this.height}`);
         this._$svg.attr('width', this.width);
