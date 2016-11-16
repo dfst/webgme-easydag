@@ -117,9 +117,10 @@ define([
         this._$svg.style('position', 'relative');
 
         // Selection
-        this._$svg.on('click', event => {
-            d3.event.stopPropagation();
-            d3.event.preventDefault();
+        this.$el.on('click', event => {
+            event = event || d3.event;
+            event.stopPropagation();
+            event.preventDefault();
             this.onBackgroundClick();
         });
         this.setupItemCallbacks();

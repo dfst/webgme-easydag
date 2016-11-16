@@ -142,21 +142,8 @@ define([
     };
 
     EasyDAGWidgetRefresher.prototype.updateContainerWidth = function () {
-        var rect,
-            width,
-            height;
-
-        if (this.isPureSvg) {
-            rect = this.$el.node().getBBox();
-            width = rect.width;
-            height = rect.height;
-        } else {
-            width = this.$el.width();
-            height = this.$el.height();
-        }
-
-        this.width = Math.max(width, this.getMaxAlongAxis('x') + MARGIN);
-        this.height = Math.max(height, this.getMaxAlongAxis('y') + MARGIN);
+        this.width = this.getMaxAlongAxis('x') + MARGIN;
+        this.height = this.getMaxAlongAxis('y') + MARGIN;
 
         this._logger.debug(`Updating width, height to ${this.width}, ${this.height}`);
         this._$svg.attr('width', this.width);
