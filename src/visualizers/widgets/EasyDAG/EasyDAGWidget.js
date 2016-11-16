@@ -121,7 +121,7 @@ define([
             event = event || d3.event;
             event.stopPropagation();
             event.preventDefault();
-            this.onBackgroundClick();
+            this.onBackgroundClick(event);
         });
         this.setupItemCallbacks();
 
