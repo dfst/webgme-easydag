@@ -276,6 +276,8 @@ define([
         delete this.items[gmeId];
         delete this.successors[gmeId];
         item.destroy();
+        item.remove();
+        this.graph.removeNode(gmeId);
     };
 
     EasyDAGWidget.prototype._removeConnection = function (gmeId) {
