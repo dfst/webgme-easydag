@@ -33,7 +33,7 @@ define([
     };
 
     EasyDAGInitial.prototype._renderEmpty = function() {
-        this.$emptyMsg = this._$svg.append('text')
+        this.$emptyMsg = this.$svg.append('text')
             .attr('x', this.width/2)
             .attr('y', this.height/2)
             .attr('class', 'background-text')
