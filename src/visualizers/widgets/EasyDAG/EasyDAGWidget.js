@@ -37,7 +37,8 @@ define([
     var EasyDAGWidget,
         WIDGET_CLASS = 'easy-dag',
         DEFAULT_SETTINGS = {
-            hotkeys: 'none'
+            hotkeys: 'none',
+            itemName: 'node'
         };
 
     EasyDAGWidget = function (logger, container) {
@@ -71,7 +72,7 @@ define([
         var clazz = this.$el.attr('class');
         this.$el.attr('class', clazz + ' ' + WIDGET_CLASS);
 
-        this._config = DEFAULT_SETTINGS;
+        this._config = _.extend({}, DEFAULT_SETTINGS);
         ComponentSettings.resolveWithWebGMEGlobal(this._config, this.getComponentId());
 
         // Items
@@ -475,9 +476,11 @@ define([
     };
 
     EasyDAGWidget.prototype.getMenuItemsFor = function () {
+        var itemName = this._config.itemName || 'node';
         var menuItems = {
             toggleExpand: {
-                name: this._allExpanded ? 'Condense all nodes' : 'Expand all nodes',
+                name: this._allExpanded ?
+                    `Condense all ${itemName}s` : `Expand all ${itemName}s`,
                 callback: () => this.toggleAllExpanded()
             }
         };
