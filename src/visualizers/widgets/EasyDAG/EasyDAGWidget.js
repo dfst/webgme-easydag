@@ -15,6 +15,7 @@ define([
     './SelectionManager',
     'js/Utils/ComponentSettings',
     'd3',
+    'jquery-contextMenu',
     'css!./styles/EasyDAGWidget.css',
     'css!./lib/opentip.css'
 ], function (
@@ -52,11 +53,14 @@ define([
         }
         this._logger = logger.fork('Widget');
         this.isPureSvg = false;
+        this._allExpanded = false;
 
         if (container) {
             this.$el = container;
             this._$svg = d3.select(this.$el[0])
                 .append('svg');
+
+            this.className = '.' + this.$el.attr('class').replace(/ /g, '.');
         } else if (svg) {  // svg
             this.isPureSvg = true;
             this.$el = svg;
@@ -104,7 +108,6 @@ define([
         this.refreshUI = _.debounce(() => this.refreshScreen(), 50);
 
         //set Widget title
-
         this.$svg = this._$svg.append('g');
         this.$connContainer = this.$svg.append('g')
             .attr('id', 'connection-container');
@@ -335,6 +338,7 @@ define([
         for (var i = ids.length; i--;) {
             this.items[ids[i]].destroy();
         }
+        $.contextMenu('destroy', this.className);
     };
 
     EasyDAGWidget.prototype.onActivate = function () {
@@ -344,6 +348,16 @@ define([
         }
         this.active = true;
         this.enableKeyBindings();
+
+        $.contextMenu('destroy', this.className);
+        $.contextMenu({
+            selector: this.className,
+            build: $trigger => {
+                return {
+                    items: this.getMenuItemsFor($trigger)
+                };
+            }
+        });
     };
 
     EasyDAGWidget.prototype.onDeactivate = function () {
@@ -353,6 +367,7 @@ define([
         }
         this.disableKeyBindings();
         this.active = false;
+        $.contextMenu('destroy', this.className);
     };
 
     // Set up inheritance
@@ -431,6 +446,10 @@ define([
         if (item !== this._connectionSrc) {
             this.resetConnectingState();
         }
+
+        if (this._allExpanded) {
+            this.toggleAllExpanded();
+        }
     };
 
     EasyDAGWidget.prototype.isConnecting = function() {
@@ -449,5 +468,30 @@ define([
         this._connecting = false;
     };
 
+    EasyDAGWidget.prototype.getMenuItemsFor = function () {
+        var menuItems = {
+            toggleExpand: {
+                name: this._allExpanded ? 'Condense all nodes' : 'Expand all nodes',
+                callback: () => this.toggleAllExpanded()
+            }
+        };
+
+        return menuItems;
+    };
+
+    EasyDAGWidget.prototype.toggleAllExpanded = function() {
+        this.expandAllNodes(this._allExpanded);
+        this._allExpanded = !this._allExpanded;
+    };
+
+    EasyDAGWidget.prototype.expandAllNodes = function(reverse) {
+        var itemIds = Object.keys(this.items),
+            method = reverse ? 'condense' : 'expand';
+
+        for (var i = itemIds.length; i--;) {
+            this.items[itemIds[i]][method]();
+        }
+        this.refreshUI();
+    };
     return EasyDAGWidget;
 });

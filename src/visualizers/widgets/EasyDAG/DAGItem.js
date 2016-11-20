@@ -144,6 +144,14 @@ define([
         this._selected = false;
     };
 
+    DAGItem.prototype.expand = function() {
+        this.decorator.expand();
+    };
+
+    DAGItem.prototype.condense = function() {
+        this.decorator.condense();
+    };
+
     DAGItem.prototype.destroy = function() {
         this.decorator.destroy();
         if (this.$tooltipAnchor) {
