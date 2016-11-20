@@ -338,7 +338,9 @@ define([
         for (var i = ids.length; i--;) {
             this.items[ids[i]].destroy();
         }
-        $.contextMenu('destroy', this.className);
+        if (!this.isPureSvg) {
+            $.contextMenu('destroy', this.className);
+        }
     };
 
     EasyDAGWidget.prototype.onActivate = function () {
@@ -349,15 +351,17 @@ define([
         this.active = true;
         this.enableKeyBindings();
 
-        $.contextMenu('destroy', this.className);
-        $.contextMenu({
-            selector: this.className,
-            build: $trigger => {
-                return {
-                    items: this.getMenuItemsFor($trigger)
-                };
-            }
-        });
+        if (!this.isPureSvg) {
+            $.contextMenu('destroy', this.className);
+            $.contextMenu({
+                selector: this.className,
+                build: $trigger => {
+                    return {
+                        items: this.getMenuItemsFor($trigger)
+                    };
+                }
+            });
+        }
     };
 
     EasyDAGWidget.prototype.onDeactivate = function () {
@@ -367,7 +371,9 @@ define([
         }
         this.disableKeyBindings();
         this.active = false;
-        $.contextMenu('destroy', this.className);
+        if (!this.isPureSvg) {
+            $.contextMenu('destroy', this.className);
+        }
     };
 
     // Set up inheritance
