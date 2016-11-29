@@ -59,6 +59,11 @@ define(['d3'], function() {
         this.y = minY + this._height/2;
     };
 
+    Connection.prototype.update = function(desc) {
+        this.src = desc.src;
+        this.dst = desc.dst;
+    };
+
     Connection.prototype.getWidth = function() {
         return this._width;
     };
