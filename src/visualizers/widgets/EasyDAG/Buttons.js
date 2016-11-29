@@ -38,7 +38,7 @@ define([
         if (!params.hide) {
             this.$el
                 .transition()
-                .duration(DURATION)
+                .duration(params.transition === false ? 0 : DURATION)
                 .attr('opacity', 1);
         }
 

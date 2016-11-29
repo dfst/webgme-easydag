@@ -17,16 +17,15 @@ define([
 
     KeyBindings.prototype.enableKeyBindings = function() {
         // Probably should attach this listener to the container not the body
-        if (this.hotkeys) {
-            document.body.onkeydown = this.onKeyPress.bind(this);
-        }
+        document.body.onkeydown = this.onKeyPress.bind(this);
+        document.body.onkeyup = this.onKeyRelease.bind(this);
+
     };
 
     KeyBindings.prototype.disableKeyBindings = function() {
         // TODO: change the focus when dialogs pop up
-        if (this.hotkeys) {
-            document.body.onkeydown = null;
-        }
+        document.body.onkeydown = null;
+        document.body.onkeyup = null;
     };
 
     KeyBindings.prototype._loadKeyMapping = function() {
@@ -44,7 +43,7 @@ define([
         }
     };
 
-    KeyBindings.prototype.onKeyPress = function(event) {
+    KeyBindings.prototype.parseKeyEvent = function(event) {
         var key = String.fromCharCode(event.keyCode);
 
         if (event.keyCode === 27) {
@@ -57,9 +56,21 @@ define([
             (event.ctrlKey ? 'ctrl ' : '') +
             (event.shiftKey ? key : key.toLowerCase());
 
-        if (REGEX.test(key)) {
+        return key;
+    };
+
+    KeyBindings.prototype.onKeyPress = function(event) {
+        var key = this.parseKeyEvent(event);
+
+        if (REGEX.test(key) && this.hotkeys) {
             this.hotkeys.handleKey(key);
         }
+        this.selectionManager.onKeyPress(key, event);
+    };
+
+    KeyBindings.prototype.onKeyRelease = function(event) {
+        var key = this.parseKeyEvent(event);
+        this.selectionManager.onKeyRelease(key, event);
     };
 
     return KeyBindings;

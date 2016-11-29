@@ -19,72 +19,29 @@ define([
         this.$selection = null;
         this.selectedItem = null;
 
-        this.initActions();
+        this.isAltPressed = false;
+        this.hasAltButtons = !!this.createAltActionButtons;
+        this.selectionChanged = false;
     };
 
-    SelectionManager.prototype.initActions = function() {
-        this.ACTIONS = {
-            add: this._widget.onAddButtonClicked.bind(this._widget),
-            remove: item => {
-                this._widget.removeItem(item);
-                this.deselect();
-            },
-            move: this._widget.showMoves.bind(this._widget)
-        };
+    SelectionManager.prototype.onKeyPress = function(key, event) {
+        if (this.hasAltButtons && (event.altKey || (event.ctrlKey && event.shiftKey))) {
+            this.isAltPressed = true;
+            this._widget.refreshUI();
+        }
+    };
 
-        // Logic for drawing the buttons
-        this.BUTTONS = {
-            remove: (container, x1, x2, y1, y2) => {
-                var ratio = 0.70,
-                    width = x2-x1,
-                    height = y2-y1,
-                    color = '#404040';
-
-                container.append('line')
-                    .attr('x1', x1 + (width * ratio))
-                    .attr('x2', x2 - (width * ratio))
-                    .attr('y1', y1 + (height * ratio))
-                    .attr('y2', y2 - (height * ratio))
-                    .attr('stroke-width', 2)
-                    .attr('stroke', color);
-
-                container.append('line')
-                    .attr('x1', x2 - (width * ratio))
-                    .attr('x2', x1 + (width * ratio))
-                    .attr('y1', y1 + (height * ratio))
-                    .attr('y2', y2 - (height * ratio))
-                    .attr('stroke-width', 2)
-                    .attr('stroke', color);
-            },
-            add: (container, x1, x2, y1, y2) => {
-                var ratio = 0.75,
-                    width = x2-x1,
-                    height = y2-y1,
-                    cx = (x1 + x2)/2,
-                    cy = (y1 + y2)/2,
-                    color = '#404040';
-
-                container.append('line')
-                    .attr('x1', cx)
-                    .attr('x2', cx)
-                    .attr('y1', y1 + (height * ratio))
-                    .attr('y2', y2 - (height * ratio))
-                    .attr('stroke-width', 2)
-                    .attr('stroke', color);
-
-                container.append('line')
-                    .attr('x1', x2 - (width * ratio))
-                    .attr('x2', x1 + (width * ratio))
-                    .attr('y1', cy)
-                    .attr('y2', cy)
-                    .attr('stroke-width', 2)
-                    .attr('stroke', color);
-            }
-        };
+    SelectionManager.prototype.onKeyRelease = function(key, event) {
+        if (this.hasAltButtons && !event.altKey &&
+            (!event.ctrlKey || !event.shiftKey)) {
+            this.isAltPressed = false;
+            this._widget.refreshUI();
+        }
     };
 
     SelectionManager.prototype.select = function(item) {
         if (item !== this.selectedItem) {
+            this.selectionChanged = true;
             this.deselect();
             this.selectedItem = item;
             item.onSelect();
@@ -95,6 +52,7 @@ define([
     SelectionManager.prototype.deselect = function() {
         var item = this.selectedItem;
         if (this.selectedItem) {
+            this.selectionChanged = false;
             this.selectedItem.onDeselect();
             this.selectedItem = null;
         }
@@ -128,6 +86,10 @@ define([
             width = itemWidth + 2*MARGIN;
             height = itemHeight + 2*MARGIN;
 
+            if (this.$selection) {
+                this.$selection.remove();
+            }
+
             this.$selection = this.$el
                 .append('g')
                 .attr('transform', `translate(${left},${top})`);
@@ -142,11 +104,17 @@ define([
                 .attr('fill', 'none')
                 .attr('opacity', 1);
 
-            this.createActionButtons(width, height);
+            // Check if this is the initial click/render
+            if (this.isAltPressed) {
+                this.createAltActionButtons(width, height, this.selectionChanged);
+            } else {
+                this.createActionButtons(width, height, this.selectionChanged);
+            }
+            this.selectionChanged = false;
         }
     };
 
-    SelectionManager.prototype.createActionButtons = function(width, height) {
+    SelectionManager.prototype.createActionButtons = function(width, height, transition) {
         // Check if the selected item can have successors
         var cx = width/2,
             btn;
@@ -156,6 +124,7 @@ define([
                 context: this._widget,
                 $pEl: this.$selection,
                 item: this.selectedItem,
+                transition: transition,
                 x: cx,
                 y: height
             });
@@ -164,6 +133,7 @@ define([
                 context: this._widget,
                 $pEl: this.$selection,
                 item: this.selectedItem,
+                transition: transition,
                 x: cx,
                 y: 0
             });
@@ -174,6 +144,7 @@ define([
             context: this._widget,
             $pEl: this.$selection,
             item: this.selectedItem,
+            transition: transition,
             x: 0,
             y: 0
         });
