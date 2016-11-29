@@ -319,15 +319,14 @@ define([
     };
 
     EasyDAGWidget.prototype.updateConnection = function (desc) {
-        var oldSrc = this.connections[desc.id].src,
-            oldDst = this.connections[desc.id].dst;
+        var conn = this.connections[desc.id],
+            oldSrc = conn.src,
+            oldDst = conn.dst;
 
         if (oldSrc !== desc.src || oldDst !== desc.dst) {
-            // Remove a connection from oldSrc to oldDst
-            // TODO
-            //this.addConnection(desc);
-            console.warn('Connection updates are not yet supported (', desc, ')');
-            assert(this.graph.nodes().indexOf('undefined') === -1);
+            this.graph.removeEdge(conn.src, conn.dst, conn.id);
+            this.graph.setEdge(desc.src, desc.dst, conn, desc.id);
+            conn.update(desc);
             this.refreshUI();
         }
     };
