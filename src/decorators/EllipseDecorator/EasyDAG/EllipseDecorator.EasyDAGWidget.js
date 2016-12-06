@@ -258,19 +258,18 @@ define([
             rx = width/2;
             dy = y - margin - initialY;
             height = margin + this.dense.height + dy;
-            this.$body
-                .transition()
-                .attr('x', -rx)
-                .attr('y', 0)
-                .attr('rx', 0)
-                .attr('ry', 0)
-                .attr('width', width)
-                .attr('height', height)
-                .each('end', (a1, a2) => {
-                    if (!isAnUpdate) {
-                        this.$attributes.attr('opacity', 1);
-                    }
-                });
+            this.updateShape({
+                x: -rx,
+                y: 0,
+                rx: 0,
+                ry: 0,
+                width: width,
+                height: height
+            }).each('end', (a1, a2) => {
+                if (!isAnUpdate) {
+                    this.$attributes.attr('opacity', 1);
+                }
+            });
 
             this.height = height;
             this.width = width;
@@ -290,6 +289,26 @@ define([
         this.$attributes.remove();
     };
 
+    EllipseDecorator.prototype.updateShape = function(params) {
+        var keys = Object.keys(params),
+            value,
+            shapes = [this.$body],
+            transitions;
+
+        if (this.$shape) {
+            shapes.push(d3.select(this.$shape));
+        }
+
+        transitions = shapes.map(shape => shape.transition());
+        for (var i = keys.length; i--;) {
+            value = params[keys[i]];
+            for (var t = transitions.length; t--;) {
+                transitions[t].attr(keys[i], value);
+            }
+        }
+        return transitions[0];
+    };
+
     EllipseDecorator.prototype.condense = function() {
         var width,
             rx,
@@ -303,14 +322,14 @@ define([
         // Clear the attributes
         this.clearFields();
 
-        this.$body
-            .transition()
-            .attr('x', -rx)
-            .attr('y', -ry)
-            .attr('width', width)
-            .attr('height', 2*ry)
-            .attr('ry', ry)
-            .attr('rx', width/2);
+        this.updateShape({
+            x: -rx,
+            y: -ry,
+            width: width,
+            height: 2*ry,
+            ry: ry,
+            rx: width/2
+        });
 
         this.$attributes = this.$el.append('g')
             .attr('opacity', 0)
