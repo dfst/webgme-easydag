@@ -3,6 +3,7 @@
 
 define([
     './lib/dagre.min',
+    './lib/saveSvgAsPng',
     'common/util/assert',
     './EasyDAGWidget.Items',
     './EasyDAGWidget.Zoom',
@@ -20,6 +21,7 @@ define([
     'css!./lib/opentip.css'
 ], function (
     dagre,
+    SvgToPng,
     assert,
     EasyDAGWidgetItems,
     EasyDAGWidgetZoom,
@@ -481,6 +483,13 @@ define([
                 name: this._allExpanded ?
                     `Condense all ${itemName}s` : `Expand all ${itemName}s`,
                 callback: () => this.toggleAllExpanded()
+            },
+            downloadImage: {
+                name: 'Download as image...',
+                callback: () => SvgToPng.saveSvgAsPng(
+                    this.$svg.node(),
+                    `${this.getActiveNodeName()}.png`
+                )
             }
         };
 

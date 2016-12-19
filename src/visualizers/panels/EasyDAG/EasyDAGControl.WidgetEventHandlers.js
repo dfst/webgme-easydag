@@ -46,6 +46,12 @@ define([
         this._widget.getValidExistingSuccessors = this.getValidExistingSuccessors.bind(this);
         this._widget.getValidExistingPredecessors = this.getValidExistingPredecessors.bind(this);
         this._widget.connectNodes = this._connectNodes.bind(this);
+        this._widget.getActiveNodeName = this._getActiveNodeName.bind(this);
+    };
+
+    EasyDAGControlEventHandlers.prototype._getActiveNodeName = function() {
+        var currentNode = this._client.getNode(this._currentNodeId);
+        return currentNode.getAttribute('name');
     };
 
     EasyDAGControlEventHandlers.prototype._undo = function() {
