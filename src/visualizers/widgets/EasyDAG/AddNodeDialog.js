@@ -139,10 +139,11 @@ define([
         this.pair = pair;
         this.html = document.createElement('div');
         this.svg = d3.select(this.html).append('svg');
-        this.decorator = new pair.node.Decorator({
-            node: pair.node,
-            parentEl: this.svg
-        });
+
+        var decoratorOpts = pair.node.decoratorOpts || {};
+        decoratorOpts.node = pair.node;
+        decoratorOpts.parentEl = this.svg;
+        this.decorator = new pair.node.Decorator(decoratorOpts);
 
         this.html.className = COL_CLASS;
     };
