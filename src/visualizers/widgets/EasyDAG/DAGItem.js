@@ -7,7 +7,7 @@ define([
 ) {
     'use strict';
     
-    var DAGItem = function(parentEl, desc) {
+    var DAGItem = function(parentEl, desc, decoratorOpts) {
         this.id = desc.id;
         this.name = desc.name;
         this.desc = desc;
@@ -24,10 +24,11 @@ define([
             .attr('id', this.id)
             .attr('class', 'position-offset');
 
-        this.decorator = new this.desc.Decorator({
-            node: desc,
-            parentEl: this.$el
-        });
+        decoratorOpts = decoratorOpts || {};
+        decoratorOpts.node = desc;
+        decoratorOpts.parentEl = this.$el;
+
+        this.decorator = new this.desc.Decorator(decoratorOpts);
 
         this.width = this.decorator.width;
         this.height = this.decorator.height;
