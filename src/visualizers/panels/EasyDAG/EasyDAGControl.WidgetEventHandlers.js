@@ -125,7 +125,7 @@ define([
         
     };
 
-    EasyDAGControlEventHandlers.prototype._deleteNode = function(nodeId) {
+    EasyDAGControlEventHandlers.prototype._deleteNode = function(nodeId, silent) {
         var node = this._client.getNode(nodeId),
             children = this._client.getNode(this._currentNodeId).getChildrenIds(),
             msg = `Deleting ${node}`,
@@ -145,9 +145,9 @@ define([
         });
         nodeIds.push(nodeId);
 
-        this._client.startTransaction(msg);
+        if (!silent) this._client.startTransaction(msg);
         this._client.deleteNodes(nodeIds);
-        this._client.completeTransaction();
+        if (!silent) this._client.completeTransaction();
     };
 
     EasyDAGControlEventHandlers.prototype._connectNodes = function(src, dst, baseId) {
