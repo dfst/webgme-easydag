@@ -149,7 +149,7 @@ define([
     AttributeField.castFn.float = parseFloat;
     AttributeField.castFn.integer = parseInt;
     AttributeField.prototype.castAttributeValue = function(value) {
-        var type = self.attr.type;
+        var type = this.attr.type;
         if (AttributeField.castFn[type]) {
             return AttributeField.castFn[type](value);
         }
