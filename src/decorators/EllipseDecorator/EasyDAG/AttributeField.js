@@ -144,6 +144,18 @@ define([
         }
     };
 
+    AttributeField.castFn = {};
+    AttributeField.castFn.boolean = value => value === 'true';
+    AttributeField.castFn.float = parseFloat;
+    AttributeField.castFn.integer = parseInt;
+    AttributeField.prototype.castAttributeValue = function(value) {
+        var type = this.attr.type;
+        if (AttributeField.castFn[type]) {
+            return AttributeField.castFn[type](value);
+        }
+        return value;
+    };
+
     AttributeField.prototype.edit = function() {
         // Edit the node's attribute
         var html = this.$content[0][0],
@@ -186,7 +198,7 @@ define([
             // on select
             dropdown.onblur = function() {
                 if (this.value !== self.attr.value) {
-                    self.saveAttribute(this.value);
+                    self.saveAttribute(self.castAttributeValue(this.value));
                 }
                 container.remove();
             };
