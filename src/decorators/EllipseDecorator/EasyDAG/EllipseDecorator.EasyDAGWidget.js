@@ -31,6 +31,7 @@ define([
         this.fields = [];
         this.nameWidth = null;
         this.fieldsWidth = null;
+        this.className = this.className || options.className || 'layer-decorator';
 
         // Pointers
         this.pointers = {};
@@ -87,7 +88,7 @@ define([
         this.$body = this.$el
             .append('rect')
             .attr('opacity', 0)
-            .attr('class', 'layer-decorator');
+            .attr('class', this.className);
 
         this.$name = this.$el.append('text')
             .attr('opacity', 0)
