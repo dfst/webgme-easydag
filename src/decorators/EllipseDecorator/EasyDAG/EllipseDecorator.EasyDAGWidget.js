@@ -47,7 +47,7 @@ define([
         //  - set in DAGItem (as argument)
         //  - set in Control
         this.color = this.color || opts.color ||
-            this._node.color || '#2196f3';
+            this._node.color || '#90caf9';
         this.usingNodeColor = !(this.color || opts.color);
         // Set width, height values
         if (!this.size) {
