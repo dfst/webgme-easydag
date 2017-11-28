@@ -48,6 +48,7 @@ define([
         this.$content = this.$parent.append('text')
             .attr('y', y)
             .attr('x', x)
+            .attr('class', 'attr-content')
             .attr('text-anchor', 'end')  // FIXME: move this to css
             .attr('dominant-baseline', 'middle')
             .text(content)
