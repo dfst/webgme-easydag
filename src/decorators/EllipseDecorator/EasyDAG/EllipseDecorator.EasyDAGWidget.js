@@ -398,7 +398,9 @@ define([
         zoom = zoom || 1;
         if (!this.nameWidth) {
             this.nameWidth = this.$name.node().getBoundingClientRect().width;
-            needsUpdate = !this.expanded && this.nameWidth > this.dense.width;
+
+            let newWidth = this.nameWidth + 2 * NAME_MARGIN;
+            needsUpdate = !this.expanded && newWidth > this.dense.width;
         }
 
         if (!this.fieldsWidth) {
