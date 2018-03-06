@@ -8,4 +8,4 @@ First, install easydag to your webgme app.
 ```
 webgme import viz EasyDAG webgme-easydag
 ```
-Next, add it to your current layout! An example can be found in [deepforge-caffe](https://github.com/dfst/deepforge-caffe)
+Next, add it to your current layout! An example can be found in [deepforge](https://github.com/deepforge-dev/deepforge)
