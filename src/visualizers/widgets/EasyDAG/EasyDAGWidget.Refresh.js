@@ -24,15 +24,90 @@ define([
         // WRITE UPDATES
         // Update the locations of all the nodes
 
-        this.queueFns([
-            this.calculatePositions.bind(this),
-            this.updateTranslation.bind(this),
-            this.refreshItems.bind(this),
-            this.refreshConnections.bind(this),
-            this.selectionManager.redraw.bind(this.selectionManager),
-            this.updateContainerWidth.bind(this),
-            this.refreshExtras.bind(this)
-        ]);
+        const graph = this.getGraphJson();
+        const elk = new ELK();
+        console.log('graph is', graph);
+        elk.layout(graph)
+            .then(layout => {
+                console.log('layout', layout);
+                this.queueFns([
+                    this.updateTranslation.bind(this),
+                    this.refreshItems.bind(this),
+                    this.refreshConnections.bind(this),
+                    this.selectionManager.redraw.bind(this.selectionManager),
+                    this.updateContainerWidth.bind(this),
+                    this.refreshExtras.bind(this)
+                ]);
+            });
+    };
+
+    EasyDAGWidgetRefresher.prototype.getLayoutAlgorithm = function () {
+        return 'layered';
+    };
+
+    EasyDAGWidgetRefresher.prototype.getPortJson = function(item, port) {
+        var position = item.decorator.getPortLocation(port.id, port.isInput),
+            side = isInput ? 'NORTH' : 'SOUTH';
+
+        position.y += (item.height/2) - 1;
+        return {
+            id: port.id,
+            width: 1,  // Ports are rendered outside the node in this library;
+            height: 1,  // we want it to look like it goes right up to the node
+            properties: {
+                'de.cau.cs.kieler.portSide': side
+            },
+            x: position.x,
+            y: position.y
+        };
+    };
+
+    EasyDAGWidgetRefresher.prototype.getGraphJson = function () {
+        const graph = {
+            id: 'root',
+            properties: {
+                algorithm: this.getLayoutAlgorithm(),
+                direction: 'DOWN'//,
+                //'de.cau.cs.kieler.spacing': 25,
+                //'de.cau.cs.kieler.edgeRouting': 'ORTHOGONAL'
+                //'de.cau.cs.kieler.klay.layered.nodePlace': 'INTERACTIVE'
+            },
+            edges: [],
+            children: []
+        };
+
+        graph.children = Object.keys(this.items).map(itemId => {
+            var item = this.items[itemId],
+                ports;
+
+            // Get the ports
+            // TODO
+            ports = item.getPorts().map(port => this.getPortJson(item, port));
+
+            return {
+                id: itemId,
+                height: item.height,
+                width: item.width,
+                ports: ports,
+                properties: {
+                    'de.cau.cs.kieler.portConstraints': 'FIXED_POS'
+                }
+            };
+        });
+
+        // Build the graph JSON for elk
+        graph.edges = Object.keys(this.connections).map(connId => {
+            var conn = this.connections[connId];
+            return {
+                id: connId,
+                source: conn.src,
+                target: conn.dst,
+                sourcePort: conn.srcPort,
+                targetPort: conn.dstPort
+            };
+        });
+
+        return graph;
     };
 
     EasyDAGWidgetRefresher.prototype.queueFns = function (fns) {
@@ -42,7 +117,6 @@ define([
     };
 
     EasyDAGWidgetRefresher.prototype.calculatePositions = function () {
-        dagre.layout(this.graph);
     };
 
     EasyDAGWidgetRefresher.prototype.refreshExtras = function () {

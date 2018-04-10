@@ -88,6 +88,24 @@ define([
         this.createHtml();
     };
 
+    DAGItem.prototype.getPortFor = function(id) {
+        // TODO:
+    };
+
+    DAGItem.prototype.getPorts = function() {
+        // TODO: these need to have {id, isInput}
+        return this.desc.ports;
+    };
+
+    DAGItem.prototype.getPortLocation = function(id, isInput) {
+        var relpos = this.decorator.getPortLocation(id, isInput);
+        return {
+            x: relpos.x + this.x - this.width/2,
+            y: relpos.y + this.y
+        };
+    };
+
+
     DAGItem.prototype.remove = function() {
         this.$container.remove();
     };

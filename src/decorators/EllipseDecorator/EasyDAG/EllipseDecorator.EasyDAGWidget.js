@@ -474,5 +474,14 @@ define([
         return null;
     };
 
+    EllipseDecorator.prototype.getPortLocation = function(id, isInput) {
+        const y = isInput ? -this.height/2 : this.height/2;
+        const x = this.width/2;
+
+        // Currently, just return the top/bottom middle
+        // FIXME
+        return {x, y};
+    };
+
     return EllipseDecorator;
 });

@@ -106,31 +106,38 @@ define([
 
     // This next function retrieves the relevant node information for the widget
     EasyDAGControl.prototype._getObjectDescriptor = function (nodeId) {
-        var nodeObj = this._client.getNode(nodeId),
+        var node = this._client.getNode(nodeId),
             objDescriptor,
             baseNode;
 
-        if (nodeObj) {
+        if (node) {
             objDescriptor = {
-                id: nodeObj.getId(),
+                id: node.getId(),
                 name: undefined,
-                parentId: nodeObj.getParentId(),
+                parentId: node.getParentId(),
                 isConnection: GMEConcepts.isConnection(nodeId),
+                ports: [],
                 attributes: {},
                 pointers: {},
                 baseName: null
             };
 
-            objDescriptor.name = nodeObj.getAttribute(nodePropertyNames.Attributes.name);
-            baseNode = this._client.getNode(nodeObj.getBaseId());
+            // Load the ports
+            objDescriptor.ports = node.getChildrenIds()
+                .map(id => this._client.getNode(id))
+                .filter(node => !!node || !node.getRegistry('isPort'))
+                .map(node => this._getObjectDescriptor(node.getId()));
+
+            objDescriptor.name = node.getAttribute(nodePropertyNames.Attributes.name);
+            baseNode = this._client.getNode(node.getBaseId());
             if (baseNode) {
                 objDescriptor.baseName = baseNode.getAttribute(nodePropertyNames.Attributes.name);
             }
 
             // Add the attributes
-            nodeObj.getValidAttributeNames()
+            node.getValidAttributeNames()
                 .forEach((name) => {
-                    var meta = nodeObj.getAttributeMeta(name),
+                    var meta = node.getAttributeMeta(name),
                         type;
 
                     if (meta) {  // skip meta-invalid properties
@@ -139,23 +146,23 @@ define([
                             name: name,
                             type: type,
                             values: meta.enum,
-                            value: nodeObj.getAttribute(name)
+                            value: node.getAttribute(name)
                         };
                     }
                 });
 
             // Add the pointers
-            nodeObj.getValidPointerNames()
+            node.getValidPointerNames()
                 .filter(name => name !== 'base')
-                .forEach(name => objDescriptor.pointers[name] = nodeObj.getPointerId(name));
+                .forEach(name => objDescriptor.pointers[name] = node.getPointerId(name));
 
             // If it is a connection, store the src, dst pointer
             if (objDescriptor.isConnection) {
                 ['src', 'dst'].forEach(function(ptr) {
-                    objDescriptor[ptr] = nodeObj.getPointer(ptr).to;
+                    objDescriptor[ptr] = node.getPointer(ptr).to;
                 });
             } else {  // Otherwise, store the decorator info
-                objDescriptor.Decorator = this._getNodeDecorator(nodeObj);
+                objDescriptor.Decorator = this._getNodeDecorator(node);
                 objDescriptor.control = this;
             }
         }
