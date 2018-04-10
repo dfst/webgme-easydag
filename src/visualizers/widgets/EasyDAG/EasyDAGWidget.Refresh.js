@@ -1,9 +1,9 @@
 /*globals define, _*/
 
 define([
-    './lib/dagre.min'
+    './lib/elk.bundled'
 ], function(
-    dagre
+    ELK
 ) {
 
     'use strict';

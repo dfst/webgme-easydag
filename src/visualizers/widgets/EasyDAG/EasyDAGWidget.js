@@ -229,6 +229,7 @@ define([
             });
 
             this.items[desc.id] = item;
+            console.log('adding node:', item.id);
             this.graph.setNode(item.id, item);
             this.itemCount++;
             this._empty = false;
@@ -254,6 +255,7 @@ define([
             this.refreshUI();
         });
 
+        console.log('adding edge:', desc.src, '->', desc.dst);
         this.graph.setEdge(desc.src, desc.dst, conn, desc.id);
 
         if (!this.successors[desc.src]) {
