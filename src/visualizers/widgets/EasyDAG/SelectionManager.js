@@ -39,7 +39,7 @@ define([
         }
     };
 
-    SelectionManager.prototype.select = function(item) {
+    SelectionManager.prototype.select = function(item, addToSelection) {
         if (item !== this.selectedItem) {
             this.selectionChanged = true;
             this.deselect();

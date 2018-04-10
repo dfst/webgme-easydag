@@ -38,6 +38,8 @@ define([
         // Additional Helpers
         this._widget.undo = this._undo.bind(this);
         this._widget.redo = this._redo.bind(this);
+        this._widget.onCopy = this._onCopy.bind(this);
+        this._widget.onPaste = this._onPaste.bind(this);
 
         // Connecting
         this._widget.getValidSuccessorNodes =
@@ -52,6 +54,14 @@ define([
     EasyDAGControlEventHandlers.prototype._getActiveNodeName = function() {
         var currentNode = this._client.getNode(this._currentNodeId);
         return currentNode.getAttribute('name');
+    };
+
+    EasyDAGControlEventHandlers.prototype._onCopy = function() {
+        console.log('copy!');
+    };
+
+    EasyDAGControlEventHandlers.prototype._onPaste = function() {
+        console.log('paste!');
     };
 
     EasyDAGControlEventHandlers.prototype._undo = function() {
