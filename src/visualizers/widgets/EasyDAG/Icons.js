@@ -7,7 +7,8 @@ define([
     };
 
     var addIcon = function (icon, container, opts) {
-        var radius = opts.radius;
+        var radius = opts.radius,
+            parent = container[0][0];
 
         requirejs([`text!widgets/EasyDAG/lib/open-iconic/${icon}.svg`], svgTxt => {
             var svg = $(svgTxt),
@@ -24,7 +25,7 @@ define([
                 .attr('width', 2*iconRadius)
                 .attr('height', 2*iconRadius);
 
-            container[0][0].appendChild(svg[0]);
+            parent.appendChild(svg[0]);
         });
     };
 

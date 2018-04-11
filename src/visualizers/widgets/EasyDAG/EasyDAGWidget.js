@@ -418,9 +418,8 @@ define([
             pairs = dsts.map(pair => [this.items[pair.node.id], pair.conn.id]);
 
         this.resetConnectingState();
-        this._connectionOptions = pairs.map(pair => pair[0]);
         this._connectionSrc = src;
-        pairs.map(pair => {
+        const tuples = pairs.map(pair => {
             var item = pair[0],
                 connId = pair[1];
 
@@ -433,25 +432,30 @@ define([
                     icon: 'chevron-bottom'
                 })
             ];
-        })
-        .forEach(pair => pair[2].on('click', () => onClick(pair[0], pair[1])));
+        });
+
+        tuples.forEach(pair => pair[2].on('click', () => onClick(pair[0], pair[1])));
 
         // Create the 'create-new' icon for the src
-        src.showIcon({
+        const srcIcon = src.showIcon({
             x: 0.5,
             y: !reverse ? 1 : 0,
             icon: 'plus'
-        }).on('click', () => {
+        });
+        srcIcon.on('click', () => {
             d3.event.stopPropagation();
             this.resetConnectingState();
             this.onAddButtonClicked(src, reverse);
         });
 
+        this._connectionOptions = tuples.map(tuple => [tuple[0], tuple[2]]);
+        this._connectionSrc = [src, srcIcon];
+
         this._connecting = true;
     };
 
     EasyDAGWidget.prototype.onDeselect = function(item) {
-        if (item !== this._connectionSrc) {
+        if (item !== this._connectionSrc[0]) {
             this.resetConnectingState();
         }
 
@@ -466,11 +470,15 @@ define([
 
     EasyDAGWidget.prototype.onSelect =
     EasyDAGWidget.prototype.resetConnectingState = function () {
-        this._connectionOptions.forEach(item => item.hideIcon());
+        this._connectionOptions.forEach(tuple => {
+            let [item, icon] = tuple;
+            item.hideIcon(icon);
+        });
         this._connectionOptions = [];
 
         if (this._connectionSrc) {
-            this._connectionSrc.hideIcon();
+            const [src, srcIcon] = this._connectionSrc;
+            src.hideIcon(srcIcon);
             this._connectionSrc = null;
         }
         this._connecting = false;

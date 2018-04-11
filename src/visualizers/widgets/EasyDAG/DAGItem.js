@@ -86,6 +86,11 @@ define([
             this.tooltips.forEach(tooltip => tooltip.prepareToHide());
         });
         this.createHtml();
+
+        // Icon support
+        this.$icons = this.$el.append('g')
+            .attr('class', `item-icons`);
+        this.$iconPos = [];
     };
 
     DAGItem.prototype.remove = function() {
@@ -123,11 +128,14 @@ define([
             });
 
         // Correct the icon location
-        if (this.$icon) {
-            left = this.$iconPos[0]*this.width;
-            top = this.$iconPos[1]*this.height;
-            this.$icon
-                .attr('transform', `translate(${left}, ${top})`);
+        if (this.$iconPos.length) {
+            const icons = this.getCurrentIcons();
+            this.$iconPos.forEach((pos, i) => {
+                left = pos[0]*this.width;
+                top = pos[1]*this.height;
+                d3.select(icons[i])
+                    .attr('transform', `translate(${left}, ${top})`);
+            });
         }
     };
 
@@ -194,11 +202,11 @@ define([
             lineRadius = radius - border,
             iconOpts = params.iconOpts || {};
 
-        this.$icon = this.$el.append('g')
+        const element = this.$icons.append('g')
             .attr('class', `item-icon ${iconClass}`)
             .attr('transform', `translate(${x*this.width}, ${y*this.height})`);
 
-        this.$icon.append('circle')
+        element.append('circle')
             .attr('r', radius);
 
         // Add the icon
@@ -208,21 +216,30 @@ define([
             // It might be nice to have something like:
             //     icons -> buttons -> <rest of easdag>
             iconOpts.radius = lineRadius;
-            Icons.addIcon(icon, this.$icon, iconOpts);
+            Icons.addIcon(icon, element, iconOpts);
         }
-        this.$iconPos = [x, y];
-        return this.$icon;
+        this.$iconPos.push([x, y]);
+
+        const icons = this.getCurrentIcons();
+        return d3.select(icons[icons.length-1]);
     };
 
-    DAGItem.prototype._setIcon = function(icon) {
-        if (this.$icon) {
-        }
+    DAGItem.prototype.getCurrentIcons = function() {
+        return this.$icons[0][0].childNodes;
     };
 
-    DAGItem.prototype.hideIcon = function() {
-        if (this.$icon) {
-            this.$icon.remove();
-        }
+    DAGItem.prototype.hideIcon = function(icon) {
+        this.getCurrentIcons().forEach((element, i) => {
+            if (element === icon[0][0]) {
+                element.remove();
+                this.$iconPos.splice(i, 1);
+            }
+        });
+    };
+
+    DAGItem.prototype.hideIcons = function() {
+        this.$icons.empty();
+        this.$iconPos = [];
     };
 
     DAGItem.prototype.destroyTooltip = function(tooltip) {
