@@ -5,7 +5,7 @@
 //  - render
 //  - edit
 define([
-    'webgme-easydag/Icons',
+    'webgme-easydag/Icons'
 ], function(
     Icons
 ) {
