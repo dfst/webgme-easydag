@@ -5,7 +5,9 @@
 //  - render
 //  - edit
 define([
+    'webgme-easydag/Icons'
 ], function(
+    Icons
 ) {
     var Field = function(parentEl, name, value, width, y) {
         this.$parent = parentEl;
@@ -81,7 +83,7 @@ define([
         }
 
         if (this.$icon) {
-            elements.push(this.$icon[0]);
+            elements.push(this.$icon[0][0]);
         }
 
         return elements.map(el => el.getBoundingClientRect().width)
@@ -94,40 +96,31 @@ define([
         }
     };
 
-    Field.prototype.createIcon = function(glyphicon, opts) {
-        var html = this.$content[0][0],
-            position = html.getBoundingClientRect(),
-            parentHtml = $('body'),
-            icon = $('<span/>'),
-            container;
+    Field.prototype.createIcon = function(iconName, opts) {
+        const size = this.$content.node().getBBox();
+
+        this.$icon = this.$parent.append('g');
 
         opts = opts || {};
-        container = opts.container || $('<div/>');
-        container.css('top', position.top);
-        container.css('left', position.right + 5);
-        container.css('position', 'absolute');
-        container.attr('id', 'download-file-icon');
-        if (opts.url) {
-            container.attr('href', opts.url);
-        }
 
-        if (opts.zoom) {
-            icon.css('zoom', (opts.zoom*100)+'%');
-        }
+        let iconOpts = {
+            x: size.x + size.width + 5,
+            y: size.y + 2,
+            size: size.height * .7
+        };
+        _.extend(iconOpts, opts);
 
-        icon.attr('class', 'glyphicon ' + glyphicon);
-        container.append(icon);
-        $(parentHtml).append(container);
+        Icons.addIcon(iconName, this.$icon, iconOpts);
 
-        this.$icon = container;
-        return container;
+        return this.$icon;
     };
 
     Field.prototype.render = function(zoom) {
+        // Do I need to change this each time?
         if (this.$icon) {
             this.$icon.remove();
         }
-        this.createIcon('glyphicon-remove', {zoom: zoom});
+        this.createIcon('x', {zoom: zoom});
     };
 
     return Field;
