@@ -1,7 +1,7 @@
 /* globals define, WebGMEGlobal*/
 // This contains all action buttons for this widget
 define([
-    './Icons',
+    'webgme-easydag/Icons',
     'underscore'
 ], function(
     Icons,

@@ -1,6 +1,6 @@
 /* globals define */
 define([
-    './Icons',
+    'webgme-easydag/Icons',
     './lib/opentip-native.min'
 ], function(
     Icons

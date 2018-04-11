@@ -5,7 +5,9 @@
 //  - render
 //  - edit
 define([
+    'webgme-easydag/Icons',
 ], function(
+    Icons
 ) {
     var Field = function(parentEl, name, value, width, y) {
         this.$parent = parentEl;
