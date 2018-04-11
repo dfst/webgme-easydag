@@ -458,7 +458,7 @@ define([
     };
 
     EasyDAGWidget.prototype.onDeselect = function(item) {
-        if (item !== this._connectionSrc[0]) {
+        if (this.isConnecting() && item !== this._connectionSrc[0]) {
             this.resetConnectingState();
         }
 
