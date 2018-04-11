@@ -112,11 +112,6 @@ define([
 
         Icons.addIcon(iconName, this.$icon, iconOpts);
 
-        if (opts.url) {
-            // TODO: Add click to download
-            //container.attr('href', opts.url);
-        }
-
         return this.$icon;
     };
 

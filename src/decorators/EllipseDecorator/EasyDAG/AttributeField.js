@@ -53,11 +53,8 @@ define([
     };
 
     AttributeField.prototype._addDownloadLink = function(url, zoom) {
-        this.createIcon('glyphicon-download', {
-            el: FILE_DOWNLOAD_ANCHOR.clone(),
-            zoom: zoom,
-            url: url
-        });
+        const icon = this.createIcon('cloud-download');
+        icon.on('click', () => this.downloadFile(url));
     };
 
     AttributeField.prototype._enableFileHandlers = function() {
@@ -236,6 +233,15 @@ define([
             }
             this._addDownloadLink(url, zoom);
         }
+    };
+
+    AttributeField.prototype.downloadFile = function(url) {
+        const element = FILE_DOWNLOAD_ANCHOR.clone()[0];
+        element.href = url;
+        element.download = url.substring(url.lastIndexOf('/') + 1);
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
     };
 
     AttributeField.prototype.uploadFile = function() {
