@@ -135,6 +135,9 @@ define([
     };
 
     EasyDAGWidget.prototype.onBackgroundClick = function () {
+        if (this.isConnecting()) {
+            this.resetConnectingState();
+        }
         this.selectionManager.deselect();
         this.refreshUI();
     };
