@@ -20,16 +20,18 @@ define(['d3'], function() {
         this._height = 0;
 
         this.$pEl = pEl;
-        this.$el = this.$pEl.append('path')
-            .attr('fill', 'white');
+        this.$el = this.$pEl.append('g')
+            .attr('id', `conn-${this.id}`);
+        this.$path = this.$el.append('path')
+            .attr('fill', 'none');
 
-        this.$el
-            .on('mouseover', () => this.$el.attr('stroke-width', 3))
-            .on('mouseout', () =>  this.$el.attr('stroke-width', 2));
+        this.$path
+            .on('mouseover', () => this.$path.attr('stroke-width', 3))
+            .on('mouseout', () =>  this.$path.attr('stroke-width', 2));
     };
 
     Connection.prototype.redraw = function() {
-        this.$el.attr('d', lineFn(this.points))
+        this.$path.attr('d', lineFn(this.points))
             .transition()
             .attr('stroke-width', 2)
             .attr('stroke', 'black')
