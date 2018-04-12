@@ -64,6 +64,7 @@ define(['d3'], function() {
     Connection.prototype.update = function(desc) {
         this.src = desc.src;
         this.dst = desc.dst;
+        this.desc = desc;
     };
 
     Connection.prototype.getWidth = function() {
