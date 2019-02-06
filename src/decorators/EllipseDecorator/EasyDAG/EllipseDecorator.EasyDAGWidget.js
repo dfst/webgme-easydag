@@ -40,6 +40,7 @@ define([
 
         this.skipAttributes = this.skipAttributes || options.skipAttributes ||
             {name: true};
+        this.hints = options.hints || {};
         this.setAttributes();
 
         // Precedence for coloring:
@@ -174,6 +175,10 @@ define([
                 y,
                 width
             );
+
+            if (this.hints[attrNames[i]]) {
+                field.setHint(this.hints[attrNames[i]]);
+            }
             field.saveAttribute = this.saveAttribute.bind(this, attrNames[i]);
             this.fields.push(field);
         }
@@ -196,6 +201,9 @@ define([
                 y,
                 hidden
             );
+            if (this.hints[this.ptrNames[i]]) {
+                field.setHint(this.hints[this.ptrNames[i]]);
+            }
             // add event handlers
             if (!hidden) {
                 field.savePointer = this.savePointer.bind(this, this.ptrNames[i]);
