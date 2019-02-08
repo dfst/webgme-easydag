@@ -24,7 +24,8 @@ define([
         // Attribute name
         var leftCol = -width/2 + Field.PADDING;
 
-        this.$label = this.$parent.append('text')
+        this.$el = this.$parent.append('g');
+        this.$label = this.$el.append('text')
             .attr('y', y)
             .attr('x', leftCol)
             .attr('font-style', 'italic')  // FIXME: move this to css
@@ -33,6 +34,11 @@ define([
             .attr('dominant-baseline', 'middle')
             .text(`${this.name}: `)
             .on('click', () => this.onLabelClick());
+        this.$hint = this.$el.append('title');
+    };
+
+    Field.prototype.setHint = function(hintText) {
+        this.$hint.text(hintText);
     };
 
     Field.prototype.isEmpty = function() {
